@@ -1,0 +1,1 @@
+# TODO(David): Manages scopes for variables, functions, classes, etc.

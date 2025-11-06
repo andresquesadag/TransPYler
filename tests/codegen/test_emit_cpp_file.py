@@ -19,22 +19,16 @@ from codegen._stubs import StubExpressionGenerator, get_stub_dynamic_value_class
 
 
 def test_emit_and_compile_cpp():
-    # Build a simple AST: if x > 5: pass
-    class MockNode:
-        def __init__(self, node_type, **kwargs):
-            self.node_type = node_type
-            for k, v in kwargs.items():
-                setattr(self, k, v)
+    # Build a simple AST using real project AST nodes: if x > 5: pass
+    from core.ast.ast_expressions import ComparisonExpr, Identifier, LiteralExpr
+    from core.ast.ast_statements import If, Block, Pass
 
-    condition = MockNode('Compare',
-        left=MockNode('Name', id='x'),
-        ops=[MockNode('Gt')],
-        comparators=[MockNode('Constant', value=5)]
-    )
+    condition = ComparisonExpr(left=Identifier(name='x'), op='Gt', right=LiteralExpr(value=5))
+    if_node = If(cond=condition, body=Block(statements=[Pass()]), elifs=[], orelse=None)
 
-    if_node = MockNode('If', test=condition, body=[MockNode('Pass')], orelse=[])
-
-    gen = ControlFlowGenerator(StubExpressionGenerator())
+    # Use the real expression generator which now understands core AST nodes
+    from codegen.expr_generator import ExpressionGenerator
+    gen = ControlFlowGenerator(ExpressionGenerator())
     gen.visit(if_node)
     body_code = gen.get_code()
 

@@ -38,6 +38,14 @@ class ControlFlowGenerator:
         self.loop_flag_stack = []  # Stack of completion flags for loop-else
         # Track declared variables to emit declarations only once
         self.declared_vars = set()
+
+    # NOTE (Persona 3 provisional): This module implements the Persona 3
+    # responsibilities (control-flow and data-structure code generation).
+    # It is intentionally lightweight and provisional — meant to be used
+    # together with the project's ExpressionGenerator (Persona 2) and the
+    # runtime DynamicValue implementation (Persona 1). Keep interfaces
+    # minimal and avoid complex C++ idioms so generated code remains
+    # readable and easy to debug during the project development.
         
     def get_indent(self) -> str:
         """Get current indentation string"""
@@ -83,10 +91,21 @@ class ControlFlowGenerator:
         if node is None:
             return ""
 
-        node_name = getattr(node, 'node_type', node.__class__.__name__)
+        # Support nodes coming from src/core/ast dataclasses as well as
+        # loosely-structured MockNode used by tests. Prefer explicit node
+        # type attributes when present (node_type), otherwise fall back to
+        # class name and dataclass type names like 'If', 'Assign', etc.
+        node_name = getattr(node, 'node_type', None)
+        if node_name is None:
+            # dataclasses from core.ast may expose their class name directly
+            node_name = node.__class__.__name__
+
         method_name = f'visit_{node_name}'
-        visitor = getattr(self, method_name, self.generic_visit)
-        return visitor(node)
+        visitor = getattr(self, method_name, None)
+        if visitor:
+            return visitor(node)
+        # Fallback: try generic_visit which raises a helpful error
+        return self.generic_visit(node)
     
     def generic_visit(self, node):
         """Fallback for unhandled node types"""
@@ -101,58 +120,64 @@ class ControlFlowGenerator:
         # Debug prints removed; keep function lean. Use unit tests to validate
         # behavior rather than noisy console output.
 
-        # Detecta la condición correctamente
-        if hasattr(node, "cond"):
-            condition = self.visit_expression(node.cond)
-        elif hasattr(node, "test"):
-            condition = self.visit_expression(node.test)
-        elif hasattr(node, "condition"):
-            condition = self.visit_expression(node.condition)
-        else:
-            raise AttributeError(
-                f"If node missing condition attribute ('cond', 'test', or 'condition'). "
-                f"Actual attributes: {dir(node)}"
-            )
-        # Ensure condition is evaluated as a boolean. The expression generator
-        # may return either a DynamicValue expression or a raw boolean C++
-        # expression. Format accordingly to avoid emitting `.toBool()` on a
-        # plain boolean expression.
+        # Support core AST If (with .cond and Block.body) and older MockNode
+        cond_node = getattr(node, 'cond', None) or getattr(node, 'test', None) or getattr(node, 'condition', None)
+        if cond_node is None:
+            raise AttributeError(f"If node missing condition attribute. Actual attributes: {dir(node)}")
+
+        condition = self.visit_expression(cond_node)
         cond_code = self._format_condition(condition)
         self.emit(f"if ({cond_code}) {{")
         self.indent()
-        # Visit all statements in the body. Avoid fragile isinstance checks
-        # because the test MockNode mutates class names; rely on visitor to
-        # handle node-specific logic instead.
-        for stmt in node.body:
+        # Body may be a Block (with .statements) or a plain list
+        body = getattr(node, 'body', None) or getattr(node, 'body', [])
+        stmts = getattr(body, 'statements', body)
+        for stmt in stmts:
             self.visit(stmt)
         self.dedent()
         self.emit("}")
 
-        # Genera el else si existe
-        if getattr(node, "orelse", None):
+        # Handle elifs (core AST uses .elifs as list of (cond, block))
+        elifs = getattr(node, 'elifs', [])
+        for econd, eblock in elifs:
+            econd_code = self._format_condition(self.visit_expression(econd))
+            self.emit(f"else if ({econd_code}) {{")
+            self.indent()
+            estmts = getattr(eblock, 'statements', eblock)
+            for stmt in estmts:
+                self.visit(stmt)
+            self.dedent()
+            self.emit("}")
+
+        # orelse may be a Block or list
+        orelse = getattr(node, 'orelse', None)
+        if orelse:
             self.emit("else {")
             self.indent()
-            for stmt in node.orelse:
+            orelse_stmts = getattr(orelse, 'statements', orelse)
+            for stmt in orelse_stmts:
                 self.visit(stmt)
             self.dedent()
             self.emit("}")
     
     def visit_Assign(self, node) -> str:
         """Generate assignment statements. Handles single-target assigns."""
-        # Only handle simple single-target assignments for now
-        targets = getattr(node, 'targets', None) or ([getattr(node, 'target', None)] if hasattr(node, 'target') else [])
-        if not targets:
-            raise NotImplementedError("Complex assignment not supported")
+        # Support core AST Assign: node.target (Identifier) or dataclass Assign.target
+        target = getattr(node, 'target', None) or (getattr(node, 'targets', [None])[0] if hasattr(node, 'targets') else None)
+        if target is None:
+            raise NotImplementedError("Assignment target not found")
 
-        target = targets[0]
-        # Only support simple name targets at the moment
-        if hasattr(target, 'id'):
+        # Extract name from Identifier or other name-like nodes
+        if hasattr(target, 'name'):
+            var_name = target.name
+        elif hasattr(target, 'id'):
             var_name = target.id
+        elif hasattr(target, 'arg'):
+            var_name = target.arg
         else:
-            # Could be subscript or attribute - not implemented here
             raise NotImplementedError("Only simple name assignment supported")
 
-        expr = self.visit_expression(node.value)
+        expr = self.visit_expression(getattr(node, 'value', node.value if hasattr(node, 'value') else None))
         if var_name not in self.declared_vars:
             self.declared_vars.add(var_name)
             self.emit(f"DynamicValue {var_name} = {expr};")
@@ -167,6 +192,12 @@ class ControlFlowGenerator:
         self.emit(f"{expr};")
         return ""
 
+    def visit_ExprStmt(self, node) -> str:
+        """Support core AST ExprStmt which wraps an expression as a statement."""
+        expr = self.visit_expression(getattr(node, 'value', None))
+        self.emit(f"{expr};")
+        return ""
+
     def visit_FunctionDef(self, node) -> str:
         """Generate a simple function definition. Parameters are DynamicValue.
 
@@ -176,17 +207,30 @@ class ControlFlowGenerator:
         if name is None:
             raise NotImplementedError("Unnamed function")
 
-        # Extract arguments (AST: node.args.args -> list of arg nodes with .arg)
-        args_node = getattr(node, 'args', None)
+        # Extract parameters. Support core AST FunctionDef.params (list of names)
+        # as well as older Python-ast-like shapes.
         params = []
-        if args_node is not None:
-            args_list = getattr(args_node, 'args', [])
-            for a in args_list:
-                # support MockNode with .arg or simple nodes with .id
-                pname = getattr(a, 'arg', None) or getattr(a, 'id', None) or getattr(a, 'name', None)
-                if not pname:
-                    raise NotImplementedError("Unsupported argument node")
-                params.append(pname)
+        if hasattr(node, 'params') and isinstance(node.params, (list, tuple)):
+            # params may be simple strings in core AST or Identifier nodes
+            params = []
+            for p in node.params:
+                if isinstance(p, str):
+                    params.append(p)
+                else:
+                    pname = getattr(p, 'name', None) or getattr(p, 'id', None) or getattr(p, 'arg', None)
+                    if not pname:
+                        raise NotImplementedError("Unsupported parameter node in FunctionDef.params")
+                    params.append(pname)
+        else:
+            args_node = getattr(node, 'args', None)
+            if args_node is not None:
+                args_list = getattr(args_node, 'args', [])
+                for a in args_list:
+                    # support MockNode with .arg or simple nodes with .id/.name
+                    pname = getattr(a, 'arg', None) or getattr(a, 'id', None) or getattr(a, 'name', None)
+                    if not pname:
+                        raise NotImplementedError("Unsupported argument node")
+                    params.append(pname)
 
         params_decl = ', '.join([f"DynamicValue {p}" for p in params])
 
@@ -198,9 +242,10 @@ class ControlFlowGenerator:
         old_declared = self.declared_vars
         self.declared_vars = set(params)
 
-        # Emit body
+        # Emit body (body may be a Block with .statements or a plain list)
         body = getattr(node, 'body', []) or []
-        for stmt in body:
+        stmts = getattr(body, 'statements', body)
+        for stmt in stmts:
             self.visit(stmt)
 
         # Ensure function returns something
@@ -292,34 +337,76 @@ class ControlFlowGenerator:
             3. for x in my_list:     →  for (auto x : (my_list).toList()) { ... }
         """
         # Get loop variable name
-        var_name = self._get_target_name(node.target)
-        
+        target = getattr(node, 'target', None)
+        var_name = self._get_target_name(target)
+
+        # Get iterable expression (core AST uses 'iterable')
+        iterable = getattr(node, 'iterable', None) or getattr(node, 'iter', None)
+
         # Check if iterating over range() - optimize this
-        if self._is_range_call(node.iter):
-            self._generate_range_for(var_name, node.iter, node.body, node.orelse)
+        if self._is_range_call(iterable):
+            self._generate_range_for(var_name, iterable, getattr(node, 'body', None) or [], getattr(node, 'orelse', None) or [])
         else:
             # General case: iterate over iterable
-            self._generate_iterable_for(var_name, node.iter, node.body, node.orelse)
+            self._generate_iterable_for(var_name, iterable, getattr(node, 'body', None) or [], getattr(node, 'orelse', None) or [])
         
         return ""
     
     def _get_target_name(self, target) -> str:
         """Extract variable name from for loop target"""
         if hasattr(target, 'id'):
-            return target.id
+            name = target.id
         elif hasattr(target, 'name'):
-            return target.name
+            name = target.name
         else:
-            return f"_loop_var_{id(target)}"
+            name = f"_loop_var_{id(target)}"
+        return self._sanitize_name(name)
+
+    def _sanitize_name(self, name: str) -> str:
+        """Return a C++-safe identifier for the given name.
+
+        Simple heuristic: if name is a C++ keyword (or 'new'), append an underscore.
+        Also replace invalid characters with '_' to avoid syntax errors.
+        """
+        if not isinstance(name, str):
+            name = str(name)
+        keywords = {
+            'alignas','alignof','and','and_eq','asm','auto','bitand','bitor','bool','break',
+            'case','catch','char','char16_t','char32_t','class','compl','const','constexpr',
+            'const_cast','continue','decltype','default','delete','do','double','dynamic_cast',
+            'else','enum','explicit','export','extern','false','float','for','friend','goto',
+            'if','inline','int','long','mutable','namespace','new','noexcept','not','not_eq',
+            'nullptr','operator','or','or_eq','private','protected','public','register',
+            'reinterpret_cast','return','short','signed','sizeof','static','static_assert',
+            'static_cast','struct','switch','template','this','thread_local','throw','true',
+            'try','typedef','typeid','typename','union','unsigned','using','virtual','void',
+            'volatile','wchar_t','while','xor','xor_eq'
+        }
+        safe = ''.join([c if (c.isalnum() or c == '_') else '_' for c in name])
+        if safe in keywords or safe == 'new':
+            safe = safe + '_'
+        # Avoid names that start with a digit
+        if safe and safe[0].isdigit():
+            safe = '_' + safe
+        return safe
     
     def _is_range_call(self, node) -> bool:
         """Check if node is a range() function call"""
         # Avoid relying on __class__.__name__ because test MockNode mutates
         # the class name at runtime. Instead detect a call by attributes.
-        return (
-            hasattr(node, 'func') and hasattr(node, 'args') and
-            hasattr(node.func, 'id') and node.func.id == 'range'
-        )
+        if node is None:
+            return False
+        # core AST CallExpr: node.callee is Identifier with .name
+        if hasattr(node, 'callee') and hasattr(node, 'args'):
+            callee = node.callee
+            if hasattr(callee, 'name') and callee.name == 'range':
+                return True
+            if hasattr(callee, 'id') and callee.id == 'range':
+                return True
+        # Python-ast-like nodes: node.func.id
+        if hasattr(node, 'func') and hasattr(node, 'args') and hasattr(node.func, 'id') and node.func.id == 'range':
+            return True
+        return False
     
     def _generate_range_for(self, var_name: str, range_node, body, orelse):
         """

@@ -12,17 +12,84 @@ from .data_structure_generator import ListOperationsGenerator
 class ExpressionGenerator:
     def __init__(self):
         self.list_gen = ListOperationsGenerator(self)
+        # NOTE (Persona 3 provisional): ExpressionGenerator is used by
+        # ControlFlowGenerator to produce C++ expressions. This implementation
+        # supports a pragmatic subset of AST nodes and returns simple, readable
+        # C++ expressions. It's provisional and intended to be replaced or
+        # extended by Persona 2's fuller generator later.
 
     def visit(self, node) -> str:
         if node is None:
             return "DynamicValue()"
-
         node_type = getattr(node, 'node_type', node.__class__.__name__)
         method = getattr(self, f'visit_{node_type}', None)
         if method:
             return method(node)
         # Fallback
         return f"/* UnhandledExpr: {node_type} */"
+
+    # --- Support for core AST nodes (src/core/ast) ---
+    def visit_LiteralExpr(self, node) -> str:
+        value = getattr(node, 'value', None)
+        if isinstance(value, bool):
+            return f"DynamicValue({'true' if value else 'false'})"
+        if isinstance(value, int):
+            return f"DynamicValue({value})"
+        if isinstance(value, float):
+            return f"DynamicValue({value})"
+        if isinstance(value, str):
+            return f'DynamicValue("{value}")'
+        if value is None:
+            return "DynamicValue()"
+        return "DynamicValue()"
+
+    def visit_Identifier(self, node) -> str:
+        return getattr(node, 'name', getattr(node, 'id', ''))
+
+    def visit_BinaryExpr(self, node) -> str:
+        left = self.visit(getattr(node, 'left', None))
+        right = self.visit(getattr(node, 'right', None))
+        op = getattr(node, 'op', '')
+        op_map = {'PLUS': '+', 'MINUS': '-', 'TIMES': '*', 'DIV': '/', 'DIVIDE': '/', 'MOD': '%', 'POWER': '**', 'POWER_OP': '**', '**': '**', '+': '+', '-': '-', '*': '*', '/': '/'}
+        cpp_op = op_map.get(op, op)
+        if cpp_op == '**':
+            return f"DynamicValue(std::pow(({left}).toFloat(), ({right}).toFloat()))"
+        return f"({left} {cpp_op} {right})"
+
+    def visit_UnaryExpr(self, node) -> str:
+        operand = self.visit(getattr(node, 'operand', None))
+        op = getattr(node, 'op', '')
+        if op in ('USUB', '-', 'NEG'):
+            return f"(DynamicValue(0) - ({operand}))"
+        if op in ('NOT', 'not'):
+            return f"!({operand}).toBool()"
+        return operand
+
+    def visit_ComparisonExpr(self, node) -> str:
+        left = self.visit(getattr(node, 'left', None))
+        right = self.visit(getattr(node, 'right', None))
+        op = getattr(node, 'op', '')
+        op_map = {'Lt': '<', 'Gt': '>', 'LtE': '<=', 'GtE': '>=', 'Eq': '==', 'NotEq': '!=', '<': '<', '>': '>', '==': '==', '!=': '!='}
+        cpp_op = op_map.get(op, op)
+        return f"({left} {cpp_op} {right})"
+
+    def visit_CallExpr(self, node) -> str:
+        callee = getattr(node, 'callee', None)
+        func_name = self.visit(callee) if callee is not None else 'unknown'
+        args = [self.visit(a) for a in getattr(node, 'args', [])]
+        args_str = ', '.join(args)
+        builtin_map = {'print': 'print_func', 'len': 'len_func', 'range': 'range_func', 'str': 'str_func', 'int': 'int_func', 'float': 'float_func', 'bool': 'bool_func'}
+        cpp_name = builtin_map.get(func_name, func_name)
+        return f"{cpp_name}({args_str})"
+
+    def visit_ListExpr(self, node) -> str:
+        return self.list_gen.visit_List(node)
+
+    def visit_TupleExpr(self, node) -> str:
+        return self.list_gen.visit_Tuple(node)
+
+    def visit_DictExpr(self, node) -> str:
+        return self.list_gen.visit_Dict(node)
 
     def visit_Constant(self, node) -> str:
         value = node.value
@@ -59,8 +126,8 @@ class ExpressionGenerator:
             'Add': '+', 'Sub': '-', 'Mult': '*', 'Div': '/', 'Mod': '%'
         }
         cpp_op = op_map.get(op, '+')
-    # Avoid unnecessary outer parentheses; keep sub-expression grouping
-    return f"({left} {cpp_op} {right})"
+        # Avoid unnecessary outer parentheses; keep sub-expression grouping
+        return f"({left} {cpp_op} {right})"
 
     def visit_UnaryOp(self, node) -> str:
         operand = self.visit(node.operand)

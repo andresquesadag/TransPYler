@@ -11,7 +11,7 @@ int main() {
     // Example variable used by generated code
     DynamicValue x(10);
 
-if ((DynamicValue((x == DynamicValue(5)))).toBool()) {
+if (((x > DynamicValue(5)))) {
     ;  // pass
 }
 

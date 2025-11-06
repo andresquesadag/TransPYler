@@ -48,6 +48,11 @@ def test_emit_and_compile_cpp():
 """
 
     stub_class = get_stub_dynamic_value_class()
+    # Make dict printing deterministic for tests by using std::map instead
+    # of unordered_map in the stub. Write the stub into a header that the
+    # generated .cpp will include.
+    stub_class = stub_class.replace('#include <unordered_map>', '#include <map>')
+    stub_class = stub_class.replace('std::unordered_map', 'std::map')
 
     main_code = f"""
 int main() {{
@@ -59,10 +64,15 @@ int main() {{
 }}
 """
 
-    full_cpp = includes + "\n" + stub_class + "\n" + main_code
-
     out_dir = os.path.join(os.path.dirname(__file__), 'out')
     os.makedirs(out_dir, exist_ok=True)
+
+    # Write header with the stub class so the generated .cpp can include it.
+    header_path = os.path.join(out_dir, 'dynamic_value_stub.hpp')
+    with open(header_path, 'w') as hf:
+        hf.write(stub_class)
+
+    full_cpp = includes + '\n' + '#include "dynamic_value_stub.hpp"' + "\n" + main_code
     cpp_path = os.path.join(out_dir, 'generated_program.cpp')
     exe_path = os.path.join(out_dir, 'generated_program')
 

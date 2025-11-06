@@ -1,181 +1,10 @@
-"""
-Temporary Stubs for Testing Person 3 Code Independently
 
-These stubs allow Person 3 to test control flow generation
-without waiting for Person 1 and Person 2 to complete their work.
-
-WARNING: These are TEMPORARY and should be replaced with real implementations!
-"""
-
-
-class StubExpressionGenerator:
-    """
-    Stub implementation of Person 2's ExpressionGenerator.
-    Provides basic expression generation for testing.
-    """
-    
-    def visit(self, node):
-        """Generate C++ code for expression AST node"""
-        # The test suite uses a MockNode which mutates the class __name__ at
-        # runtime. Relying solely on __class__.__name__ becomes fragile. Try
-        # to infer the node type from attributes when the reported name is not
-        # one of the expected AST node types.
-        node_type = node.__class__.__name__
-        known_types = {
-            'Num', 'Constant', 'Name', 'Str', 'NameConstant', 'BinOp',
-            'UnaryOp', 'Compare', 'BoolOp', 'Call'
-        }
-
-        if node_type not in known_types:
-            # Heuristic detection based on typical AST attributes
-            if hasattr(node, 'left') and hasattr(node, 'ops') and hasattr(node, 'comparators'):
-                node_type = 'Compare'
-            elif hasattr(node, 'func') and hasattr(node, 'args'):
-                node_type = 'Call'
-            elif hasattr(node, 'left') and hasattr(node, 'right') and hasattr(node, 'op'):
-                node_type = 'BinOp'
-            elif hasattr(node, 'operand') and hasattr(node, 'op'):
-                node_type = 'UnaryOp'
-            elif hasattr(node, 'values') and hasattr(node, 'op'):
-                node_type = 'BoolOp'
-            elif hasattr(node, 'id'):
-                node_type = 'Name'
-            elif hasattr(node, 's'):
-                node_type = 'Str'
-            elif hasattr(node, 'value'):
-                # Could be Constant or NameConstant. Use value type to decide.
-                node_type = 'Constant'
-        
-        if node_type in ('Num', 'Constant'):
-            value = node.value if hasattr(node, 'value') else node.n
-            if isinstance(value, int):
-                return f"DynamicValue({value})"
-            elif isinstance(value, float):
-                return f"DynamicValue({value})"
-            elif isinstance(value, str):
-                return f'DynamicValue("{value}")'
-            elif isinstance(value, bool):
-                return f"DynamicValue({'true' if value else 'false'})"
-            else:
-                return "DynamicValue()"
-        
-        elif node_type == 'Name':
-            return node.id
-        
-        elif node_type == 'Str':
-            return f'DynamicValue("{node.s}")'
-        
-        elif node_type == 'NameConstant':
-            if node.value is True:
-                return "DynamicValue(true)"
-            elif node.value is False:
-                return "DynamicValue(false)"
-            elif node.value is None:
-                return "DynamicValue()"
-            
-        elif node_type == 'BinOp':
-            left = self.visit(node.left)
-            right = self.visit(node.right)
-            op = node.op.__class__.__name__
-            
-            op_map = {
-                'Add': '+', 'Sub': '-', 'Mult': '*', 'Div': '/',
-                'FloorDiv': '/', 'Mod': '%', 'Pow': 'pow',
-                'Lt': '<', 'Gt': '>', 'LtE': '<=', 'GtE': '>=',
-                'Eq': '==', 'NotEq': '!='
-            }
-            
-            cpp_op = op_map.get(op, '+')
-            if cpp_op == 'pow':
-                return f"DynamicValue(std::pow(({left}).toFloat(), ({right}).toFloat()))"
-            return f"({left} {cpp_op} {right})"
-        
-        elif node_type == 'UnaryOp':
-            operand = self.visit(node.operand)
-            op = node.op.__class__.__name__
-            if op == 'USub':
-                return f"(DynamicValue(0) - {operand})"
-            elif op == 'Not':
-                return f"DynamicValue(!({operand}).toBool())"
-            return operand
-        
-        elif node_type == 'Compare':
-            left = self.visit(node.left)
-            # Handle first comparison
-            op = node.ops[0].__class__.__name__
-            right = self.visit(node.comparators[0])
-            
-            op_map = {
-                'Lt': '<', 'Gt': '>', 'LtE': '<=', 'GtE': '>=',
-                'Eq': '==', 'NotEq': '!='
-            }
-            cpp_op = op_map.get(op, '==')
-            
-            result = f"({left} {cpp_op} {right})"
-            
-            # Handle chained comparisons (if any)
-            for i in range(1, len(node.ops)):
-                op = node.ops[i].__class__.__name__
-                cpp_op = op_map.get(op, '==')
-                left = self.visit(node.comparators[i-1])
-                right = self.visit(node.comparators[i])
-                result = f"(({result}).toBool() && ({left} {cpp_op} {right}).toBool())"
-            
-            return f"DynamicValue({result})"
-        
-        elif node_type == 'BoolOp':
-            op = node.op.__class__.__name__
-            values = [self.visit(v) for v in node.values]
-            
-            if op == 'And':
-                result = f"({values[0]}).toBool()"
-                for v in values[1:]:
-                    result = f"({result} && ({v}).toBool())"
-            else:  # Or
-                result = f"({values[0]}).toBool()"
-                for v in values[1:]:
-                    result = f"({result} || ({v}).toBool())"
-            
-            return f"DynamicValue({result})"
-        
-        elif node_type == 'Call':
-            func_name = node.func.id if hasattr(node.func, 'id') else 'unknown'
-            args = [self.visit(arg) for arg in node.args]
-            args_str = ', '.join(args)
-            
-            # Built-in function mapping
-            builtin_map = {
-                'print': 'print_func',
-                'len': 'len_func',
-                'range': 'range_func',
-                'str': 'str_func',
-                'int': 'int_func',
-                'float': 'float_func',
-                'bool': 'bool_func',
-                'min': 'min_func',
-                'max': 'max_func',
-                'sum': 'sum_func',
-            }
-            
-            cpp_func = builtin_map.get(func_name, func_name)
-            return f"{cpp_func}({args_str})"
-        
-        else:
-            return f"/* Unhandled: {node_type} */"
-
-
-def get_stub_dynamic_value_class() -> str:
-    """
-    Stub DynamicValue class for testing.
-    This is a TEMPORARY replacement for Person 1's implementation.
-    """
-    return """
 // ============================================================================
 // STUB DynamicValue Class - TEMPORARY FOR TESTING ONLY
 // Replace with Person 1's actual implementation!
 // ============================================================================
 
-#include <unordered_map>
+#include <map>
 
 class DynamicValue {
 public:
@@ -188,7 +17,7 @@ private:
     std::string string_val;
     bool bool_val;
     std::vector<DynamicValue> list_val;
-    std::unordered_map<std::string, DynamicValue> dict_val;
+    std::map<std::string, DynamicValue> dict_val;
 
 public:
     // Constructors
@@ -198,7 +27,7 @@ public:
     DynamicValue(const std::string& v) : type(STRING), int_val(0), float_val(0.0), string_val(v), bool_val(false) {}
     DynamicValue(bool v) : type(BOOL), int_val(0), float_val(0.0), bool_val(v) {}
     DynamicValue(const std::vector<DynamicValue>& v) : type(LIST), int_val(0), float_val(0.0), bool_val(false), list_val(v) {}
-    DynamicValue(const std::unordered_map<std::string, DynamicValue>& v) : type(DICT), int_val(0), float_val(0.0), bool_val(false), dict_val(v) {}
+    DynamicValue(const std::map<std::string, DynamicValue>& v) : type(DICT), int_val(0), float_val(0.0), bool_val(false), dict_val(v) {}
     
     // Type checking
     Type getType() const { return type; }
@@ -273,12 +102,12 @@ public:
         throw std::runtime_error("Value is not a list");
     }
 
-    std::unordered_map<std::string, DynamicValue>& toDict() {
+    std::map<std::string, DynamicValue>& toDict() {
         if (type == DICT) return dict_val;
         throw std::runtime_error("Value is not a dict");
     }
 
-    const std::unordered_map<std::string, DynamicValue>& toDict() const {
+    const std::map<std::string, DynamicValue>& toDict() const {
         if (type == DICT) return dict_val;
         throw std::runtime_error("Value is not a dict");
     }
@@ -369,4 +198,3 @@ public:
         }
     }
 };
-"""

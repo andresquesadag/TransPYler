@@ -36,6 +36,8 @@ class ControlFlowGenerator:
         # Loop tracking for break/continue validation and else clause support
         self.in_loop = 0  # Nested loop depth
         self.loop_flag_stack = []  # Stack of completion flags for loop-else
+        # Track declared variables to emit declarations only once
+        self.declared_vars = set()
         
     def get_indent(self) -> str:
         """Get current indentation string"""
@@ -111,9 +113,12 @@ class ControlFlowGenerator:
                 f"If node missing condition attribute ('cond', 'test', or 'condition'). "
                 f"Actual attributes: {dir(node)}"
             )
-
-        # Ensure condition is evaluated as a boolean (DynamicValue -> bool)
-        self.emit(f"if (({condition}).toBool()) {{")
+        # Ensure condition is evaluated as a boolean. The expression generator
+        # may return either a DynamicValue expression or a raw boolean C++
+        # expression. Format accordingly to avoid emitting `.toBool()` on a
+        # plain boolean expression.
+        cond_code = self._format_condition(condition)
+        self.emit(f"if ({cond_code}) {{")
         self.indent()
         # Visit all statements in the body. Avoid fragile isinstance checks
         # because the test MockNode mutates class names; rely on visitor to
@@ -131,6 +136,81 @@ class ControlFlowGenerator:
                 self.visit(stmt)
             self.dedent()
             self.emit("}")
+    
+    def visit_Assign(self, node) -> str:
+        """Generate assignment statements. Handles single-target assigns."""
+        # Only handle simple single-target assignments for now
+        targets = getattr(node, 'targets', None) or ([getattr(node, 'target', None)] if hasattr(node, 'target') else [])
+        if not targets:
+            raise NotImplementedError("Complex assignment not supported")
+
+        target = targets[0]
+        # Only support simple name targets at the moment
+        if hasattr(target, 'id'):
+            var_name = target.id
+        else:
+            # Could be subscript or attribute - not implemented here
+            raise NotImplementedError("Only simple name assignment supported")
+
+        expr = self.visit_expression(node.value)
+        if var_name not in self.declared_vars:
+            self.declared_vars.add(var_name)
+            self.emit(f"DynamicValue {var_name} = {expr};")
+        else:
+            self.emit(f"{var_name} = {expr};")
+        return ""
+
+    def visit_Expr(self, node) -> str:
+        """Expression statement (e.g., a call like print(...))"""
+        expr = self.visit_expression(node.value)
+        # Emit as statement
+        self.emit(f"{expr};")
+        return ""
+
+    def visit_FunctionDef(self, node) -> str:
+        """Generate a simple function definition. Parameters are DynamicValue.
+
+        The function returns DynamicValue. Body is emitted as-is.
+        """
+        name = getattr(node, 'name', None)
+        if name is None:
+            raise NotImplementedError("Unnamed function")
+
+        # Extract arguments (AST: node.args.args -> list of arg nodes with .arg)
+        args_node = getattr(node, 'args', None)
+        params = []
+        if args_node is not None:
+            args_list = getattr(args_node, 'args', [])
+            for a in args_list:
+                # support MockNode with .arg or simple nodes with .id
+                pname = getattr(a, 'arg', None) or getattr(a, 'id', None) or getattr(a, 'name', None)
+                if not pname:
+                    raise NotImplementedError("Unsupported argument node")
+                params.append(pname)
+
+        params_decl = ', '.join([f"DynamicValue {p}" for p in params])
+
+        # Emit function header
+        self.emit(f"DynamicValue {name}({params_decl}) {{")
+        self.indent()
+
+        # Track declared vars locally
+        old_declared = self.declared_vars
+        self.declared_vars = set(params)
+
+        # Emit body
+        body = getattr(node, 'body', []) or []
+        for stmt in body:
+            self.visit(stmt)
+
+        # Ensure function returns something
+        self.emit("return DynamicValue();")
+
+        # Restore declared vars
+        self.declared_vars = old_declared
+        self.dedent()
+        self.emit("}")
+        return ""
     # ==================== WHILE LOOPS ====================
     
     def visit_While(self, node) -> str:
@@ -162,7 +242,8 @@ class ControlFlowGenerator:
             self.loop_flag_stack.append(flag_name)
 
         # Generate while loop header
-        self.emit(f"while (({condition}).toBool()) {{")
+        cond_code = self._format_condition(condition)
+        self.emit(f"while ({cond_code}) {{")
         self.indent_level += 1
         self.in_loop += 1
 
@@ -458,6 +539,29 @@ class ControlFlowGenerator:
                 f"Expression type {node_type} must be handled by Person 2's "
                 "expression generator. Use real generator for this node."
             )
+    
+    def _format_condition(self, condition: str) -> str:
+        """
+        Format a condition expression string for use in an if/while header.
+
+        The expression generator may return either a DynamicValue-wrapped
+        expression (e.g. "DynamicValue(...)"), or a raw boolean expression
+        (e.g. "(a == b)" or "(x < 3)"). This helper chooses whether to
+        append ".toBool()" or leave the expression as-is.
+        """
+        s = condition.strip()
+        # If the expression already performs a boolean conversion, keep it
+        if ".toBool()" in s:
+            return f"({s})"
+        # If it's explicitly a DynamicValue, call .toBool()
+        if s.startswith("DynamicValue("):
+            return f"({s}).toBool()"
+        # If it looks like a comparison or boolean expression, use as-is
+        for token in ("==", "!=", "<=", ">=", "<", ">", "&&", "||", "!"):
+            if token in s:
+                return f"({s})"
+        # Default: assume DynamicValue and call .toBool()
+        return f"({s}).toBool()"
     
     # ==================== HELPER METHODS ====================
     

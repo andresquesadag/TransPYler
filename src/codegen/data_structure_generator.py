@@ -167,4 +167,59 @@ class ListOperationsGenerator:
         else:
             return "DynamicValue()"
 
+    def visit_Tuple(self, node) -> str:
+        """
+        Generate a tuple as a DynamicValue containing a vector (tuples are
+        represented as lists in the runtime stub for simplicity).
+        """
+        # Reuse list generation semantics (tuple -> vector)
+        # node.elts is the list of elements
+        if not getattr(node, 'elts', None):
+            return "DynamicValue(std::vector<DynamicValue>())"
+
+        elements = []
+        for elt in node.elts:
+            if self.expression_gen:
+                elem_code = self.expression_gen.visit(elt)
+            else:
+                elem_code = self._simple_element(elt)
+            elements.append(elem_code)
+
+        elements_str = ", ".join(elements)
+        return f"DynamicValue(std::vector<DynamicValue>{{{elements_str}}})"
+
+    def visit_Dict(self, node) -> str:
+        """
+        Generate a dictionary literal as a DynamicValue wrapping an
+        std::unordered_map<std::string, DynamicValue>.
+        Assumes keys are simple string constants for now.
+        """
+        items = []
+        keys = getattr(node, 'keys', []) or []
+        values = getattr(node, 'values', []) or []
+        for k, v in zip(keys, values):
+            # Only support string constant keys for simplicity
+            if hasattr(k, 'value') and isinstance(k.value, str):
+                key_code = k.value
+            else:
+                # Fallback to stringifying the expression
+                if self.expression_gen:
+                    key_code = self.expression_gen.visit(k)
+                else:
+                    key_code = '""'
+
+            if self.expression_gen:
+                val_code = self.expression_gen.visit(v)
+            else:
+                val_code = self._simple_element(v)
+
+            # ensure key is a C++ string literal
+            if not key_code.startswith('"'):
+                key_code = f'"{key_code}"'
+
+            items.append(f"{{{key_code}, {val_code}}}")
+
+        items_str = ", ".join(items)
+        return f"DynamicValue(std::unordered_map<std::string, DynamicValue>{{{items_str}}})"
+
 

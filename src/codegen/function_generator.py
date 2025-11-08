@@ -27,13 +27,16 @@ class FunctionGenerator:
 		self.target = target
 		# TODO(David): Add helpers for scopes and parameters
 
-	def visit(self, node) -> str:
+	def visit(self, node: dict) -> str:
 		"""
-		Dispatches node to the appropriate handler based on its type.
+		Dispatches node to the appropriate handler based on its type (JSON/dict).
 		Args:
-			node: AST node to process.
+			node: JSON node to process.
 		Returns:
 			str: Generated code for the node.
 		"""
-		# TODO(David): Implement function generation, parameters, return, etc.
-		return f"// TODO(David): {type(node).__name__}"
+		node_type = node['_type']
+		if node_type == "FunctionDef":
+			# TODO: Implement function codegen
+			return f"def {node['name']}(...):\n    pass"
+		return f"// TODO: {node_type}"

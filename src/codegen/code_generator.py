@@ -1,1 +1,88 @@
-# TODO(Randy): Main Codegen Class
+"""
+CodeGenerator
+-------------
+This module provides the CodeGenerator class, which orchestrates code generation using modular visitors for statements, data structures, expressions, and functions.
+
+Key Features:
+- Integrates Persona 1 (DynamicType, C++ type system), Persona 2 (expressions, functions, scopes), and Persona 3 (control flow, data structures).
+- Provides file generation for Python and C++ code, including STL headers and placeholders for unimplemented features.
+- Central entry point for generating code from ASTs.
+"""
+
+"""
+CodeGenerator: Orchestrates code generation using modular visitors for statements, data structures, expressions, and functions.
+
+Integrates Persona 1 (DynamicType, C++ type system), Persona 2 (expressions, functions, scopes), and Persona 3 (control flow, data structures).
+Provides file generation for Python and C++ code, including STL headers and placeholders for unimplemented features.
+"""
+
+
+from .statement_generator import StatementVisitor
+from .data_structure_generator import DataStructureGenerator
+from .expr_generator import ExprGenerator
+from .function_generator import FunctionGenerator
+import os
+
+
+class CodeGenerator:
+	"""
+	Main code generation orchestrator.
+	Integrates all codegen visitors and provides file output for Python and C++.
+	"""
+
+	def __init__(self, target: str = "python"):
+		"""
+		Initialize the CodeGenerator.
+		Args:
+			target (str): Target language ('python' or 'cpp').
+		Sets up all codegen visitors for statements, data structures, expressions, and functions.
+		"""
+		self.target = target  # Target language for code generation
+		self.statement_visitor = StatementVisitor(target)  # Handles control flow (Persona 3)
+		self.data_structure_generator = DataStructureGenerator(target)  # Handles collections (Persona 3)
+		self.expr_generator = ExprGenerator(target)  # Handles expressions and literals (Persona 2)
+		self.function_generator = FunctionGenerator(target)  # Handles functions and scopes (Persona 2)
+		# TODO(Andres): Integrate DynamicType system and helpers for dynamic typing in C++ (Persona 1)
+
+	def visit(self, node) -> str:
+		"""
+		Dispatch code generation to the appropriate visitor based on node type.
+		Args:
+			node: AST node to generate code for.
+		Returns:
+			str: Generated code for the node.
+		"""
+		node_type = type(node).__name__  # Get the class name of the AST node
+		if node_type.endswith("Expr"):
+			# Expressions and literals (Persona 2)
+			# Delegates to ExprGenerator
+			return self.expr_generator.visit(node)
+		if node_type.endswith("FunctionDef"):
+			# Function definitions and scopes (Persona 2)
+			# Delegates to FunctionGenerator
+			return self.function_generator.visit(node)
+		# Control flow and helpers (Persona 3)
+		# Delegates to StatementVisitor
+		return self.statement_visitor.visit(node)
+
+	def generate_file(self, node, filename: str = "output.cpp"):
+		"""
+		Generate code for the given AST node and write it to a file.
+		Args:
+			node: Root AST node to generate code for.
+			filename (str): Output filename.
+		Returns:
+			str: The filename where code was written.
+		Adds C++ STL headers if target is 'cpp'.
+		"""
+		code = self.visit(node)  # Generate code from AST
+		if self.target == "cpp":
+			# Add C++ STL headers and namespace
+			code = (
+				"#include <vector>\n#include <tuple>\n#include <set>\n#include <map>\n#include <iostream>\nusing namespace std;\n\n" + code
+			)
+			# TODO(Andres): Include definition of DynamicType and operator overloads in C++ (Persona 1)
+		# Write generated code to file
+		with open(filename, "w") as f:
+			f.write(code)
+		return filename  # Return the output filename

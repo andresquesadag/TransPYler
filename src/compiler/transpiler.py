@@ -24,6 +24,8 @@ class Transpiler:
 		self.codegen = CodeGenerator(target)
 
 	def transpile(self, source_code: str, filename: str = "output.cpp") -> str:
-		ast = self.parser.parse(source_code)
-		# Persona 3: control de flujo y estructuras de datos
-		return self.codegen.generate_file(ast, filename)
+		ast_obj = self.parser.parse(source_code)
+		# Convert AST object to dict (JSON-like)
+		ast_dict = ast_obj.to_dict()
+		# Codegen now works over dicts
+		return self.codegen.generate_file(ast_dict, filename)

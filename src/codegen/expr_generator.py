@@ -16,18 +16,19 @@ Handles conversion of operators, literals, assignments, and special cases (e.g.,
 Includes helpers for scope management and extensibility for new expression types.
 """
 
-class ExprGenerator:
-	def __init__(self, target: str = "python"):
-		self.target = target
-		# TODO(David): Add helpers for scope management and operator conversion
 
-	def visit(self, node: dict) -> str:
-		# Mocks/stubs for Persona 3 tests
-		node_type = node['_type']
-		if node_type == "LiteralExpr":
-			# Basic literal rendering
-			return repr(node["value"])
-		if node_type == "Identifier":
-			return node["name"]
-		# TODO(David): Implement expression, assignment, pow(a,b), etc.
-		return f"// TODO(David): {node_type}"
+class ExprGenerator:
+    def __init__(self, target: str = "python"):
+        self.target = target
+        # TODO(David): Add helpers for scope management and operator conversion
+
+    def visit(self, node: dict) -> str:
+        # Mocks/stubs for Persona 3 tests
+        node_type = node["_type"]
+        if node_type == "LiteralExpr":
+            # Basic literal rendering
+            return repr(node["value"])
+        if node_type == "Identifier":
+            return node["name"]
+        # TODO(David): Implement expression, assignment, pow(a,b), etc.
+        return f"// TODO(David): {node_type}"

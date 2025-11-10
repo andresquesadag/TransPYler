@@ -102,7 +102,7 @@ class DynamicType
     DynamicType operator+() const;
 
     // List/Dict operations
-    DynamicType &operator[](size_t index);
+    DynamicType &operator[](const size_t index);
     DynamicType &operator[](const std::string &key);
 
     // Output stream
@@ -110,46 +110,10 @@ class DynamicType
       os << dt.toString();
       return os;
     }
+
+    // Collection getters
+    std::vector<DynamicType>& getList();
+    std::map<std::string, DynamicType>& getDict();
 };
-
-// Python built-in function equivalents
-inline void print(const DynamicType &value)
-{
-  std::cout << value.toString() << std::endl;
-}
-
-inline DynamicType len(const DynamicType &value)
-{
-  if (value.isList())
-  {
-    auto &list = std::any_cast<const std::vector<DynamicType> &>(value);
-    return DynamicType(static_cast<int>(list.size()));
-  }
-  if (value.isString())
-  {
-    return DynamicType(static_cast<int>(value.toString().length()));
-  }
-  throw std::runtime_error("len() not supported for this type");
-}
-
-inline DynamicType range(int stop)
-{
-  std::vector<DynamicType> result;
-  for (int i = 0; i < stop; ++i)
-  {
-    result.push_back(DynamicType(i));
-  }
-  return DynamicType(result);
-}
-
-inline DynamicType range(int start, int stop)
-{
-  std::vector<DynamicType> result;
-  for (int i = start; i < stop; ++i)
-  {
-    result.push_back(DynamicType(i));
-  }
-  return DynamicType(result);
-}
 
 #endif // DYNAMIC_TYPE_HPP

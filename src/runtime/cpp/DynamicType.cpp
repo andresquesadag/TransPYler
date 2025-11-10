@@ -257,18 +257,49 @@ DynamicType DynamicType::operator+() const {
   throw std::runtime_error("Unsupported operand type for unary +");
 }
 
-DynamicType &DynamicType::operator[](size_t index) {
+DynamicType &DynamicType::operator[](const size_t index) {
   if(type != Type::LIST){
     throw std::runtime_error("Type is not a list");
   }
-  auto &list = std::any_cast<std::vector<DynamicType> &>(value);
-  return list.at(index);
+  try{
+    std::vector<DynamicType> &list = std::any_cast<std::vector<DynamicType> &>(value);
+    return list.at(index);
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (operator[])");
+  }
 }
 
 DynamicType &DynamicType::operator[](const std::string &key) {
   if(type != Type::DICT){
     throw std::runtime_error("Type is not a dict");
   }
-  auto &dict = std::any_cast<std::map<std::string, DynamicType> &>(value);
-  return dict[key];
+  try {
+    std::map<std::string, DynamicType> &dict = std::any_cast<std::map<std::string, DynamicType> &>(value);
+    return dict[key];
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (operator[])");
+  }
+}
+
+
+std::vector<DynamicType>& DynamicType::getList() {
+  if(type != Type::LIST){
+    throw std::runtime_error("Type is not a list");
+  }
+  try{
+    return std::any_cast<std::vector<DynamicType>&>(value);
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (getList)");
+  }
+}
+
+std::map<std::string, DynamicType>& DynamicType::getDict() {
+  if(type != Type::DICT){
+    throw std::runtime_error("Type is not a dict");
+  }
+  try{
+    return std::any_cast<std::map<std::string, DynamicType>&>(value);
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (getDict)");
+  }
 }

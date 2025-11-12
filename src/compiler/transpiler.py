@@ -24,8 +24,16 @@ class Transpiler:
 		self.codegen = CodeGenerator(target)
 
 	def transpile(self, source_code: str, filename: str = "output.cpp") -> str:
+		"""
+		Transpile source code to target language.
+		
+		Args:
+			source_code: The source code to transpile
+			filename: Output filename
+			
+		Returns:
+			str: The output filename
+		"""
 		ast_obj = self.parser.parse(source_code)
-		# Convert AST object to dict (JSON-like)
-		ast_dict = ast_obj.to_dict()
-		# Codegen now works over dicts
-		return self.codegen.generate_file(ast_dict, filename)
+		# Pass AST object directly to codegen (no conversion to dict)
+		return self.codegen.generate_file(ast_obj, filename)

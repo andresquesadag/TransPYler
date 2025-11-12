@@ -21,13 +21,13 @@ class ExprGenerator:
 		self.target = target
 		# TODO(David): Add helpers for scope management and operator conversion
 
-	def visit(self, node: dict) -> str:
+	def visit(self, node) -> str:
 		# Mocks/stubs for Persona 3 tests
-		node_type = node['_type']
+		node_type = node.__class__.__name__
 		if node_type == "LiteralExpr":
 			# Basic literal rendering
-			return repr(node["value"])
+			return repr(node.value)
 		if node_type == "Identifier":
-			return node["name"]
+			return node.name
 		# TODO(David): Implement expression, assignment, pow(a,b), etc.
 		return f"// TODO(David): {node_type}"

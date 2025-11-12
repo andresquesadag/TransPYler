@@ -44,16 +44,15 @@ class CodeGenerator:
 		self.function_generator = FunctionGenerator(target)  # Handles functions and scopes (Persona 2)
 		# TODO(Andres): Integrate DynamicType system and helpers for dynamic typing in C++ (Persona 1)
 
-	def visit(self, node: dict) -> str:
+	def visit(self, node) -> str:
 		"""
-		Dispatch code generation to the appropriate visitor based on node type (JSON/dict).
+		Dispatch code generation to the appropriate visitor based on node type.
 		Args:
-			node: AST node as dict (from JSON)
+			node: AST node object
 		Returns:
 			str: Generated code for the node.
 		"""
-		node_type = node.get("_type", "")
-		# Persona 3: Only use mocks/stubs for Persona 2/3
+		node_type = node.__class__.__name__
 		if node_type.endswith("Expr") or node_type == "Identifier":
 			return self.expr_generator.visit(node)
 		if node_type.endswith("FunctionDef"):

@@ -42,32 +42,32 @@ class StatementVisitor:
 		"""
 		return self.indent_str * self.indent_level
 
-	def visit(self, node: dict) -> str:
+	def visit(self, node) -> str:
 		"""
-		Dispatches node to the appropriate handler based on its type and target language (JSON/dict).
+		Dispatches node to the appropriate handler based on its type and target language.
 		Args:
-			node: AST node as dict (from JSON)
+			node: AST node object
 		Returns:
 			str: Generated code for the node.
 		"""
-		method_name = f"visit_{node['_type']}_{self.target}"
+		method_name = f"visit_{node.__class__.__name__}_{self.target}"
 		visitor = getattr(self, method_name, None)
 		if visitor:
 			return visitor(node)
 		return self.generic_visit(node)
 
-	def generic_visit(self, node: dict) -> str:
+	def generic_visit(self, node) -> str:
 		"""
 		Fallback for unsupported nodes.
 		Args:
-			node: AST node as dict.
+			node: AST node object.
 		Returns:
 			str: TODO comment for unsupported node type.
 		"""
-		return f"// TODO: {node.get('_type', 'UnknownNode')}"
+		return f"// TODO: {node.__class__.__name__}"
 
 	# --- Python ---
-	def visit_Block_python(self, node: dict):
+	def visit_Block_python(self, node):
 		"""
 		Generates Python code for a block of statements.
 		Args:
@@ -77,12 +77,12 @@ class StatementVisitor:
 		"""
 		code = []
 		self.indent_level += 1
-		for stmt in node["statements"]:
+		for stmt in node.statements:
 			code.append(self.indent() + self.visit(stmt))
 		self.indent_level -= 1
 		return "\n".join(code)
 
-	def visit_If_python(self, node: dict):
+	def visit_If_python(self, node):
 		"""
 		Generates Python code for an if statement.
 		Args:
@@ -91,9 +91,9 @@ class StatementVisitor:
 			str: Python code for the if statement.
 		"""
 		code = []
-		code.append(f"{self.indent()}if {self.visit(node['cond'])}:")
-		code.append(self.visit(node['body']))
-		for cond, block in node["elifs"]:
+		code.append(f"{self.indent()}if {self.visit(node.cond)}:")
+		code.append(self.visit(node.body))
+		for cond, block in node.elifs:
 			code.append(f"{self.indent()}elif {self.visit(cond)}:")
 			code.append(self.visit(block))
 		if node.orelse:

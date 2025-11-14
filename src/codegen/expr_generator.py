@@ -64,8 +64,8 @@ class ExprGenerator:
 	# ---------- Identificadores ----------
 	def visit_Identifier(self, node: Identifier) -> str:
 		name = node.name
-		if self.scope is not None and hasattr(self.scope, "exist"):
-			if not self.scope.exist(name):
+		if self.scope is not None and hasattr(self.scope, "exists"):
+			if not self.scope.exists(name):
 				raise NameError(f"Identificador '{name}' no definido en el scope actual")
 		return name
 	

@@ -21,6 +21,7 @@ from .statement_generator import StatementVisitor
 from .data_structure_generator import DataStructureGenerator
 from .expr_generator import ExprGenerator
 from .function_generator import FunctionGenerator
+from .scope_manager import ScopeManager
 import os
 
 
@@ -40,8 +41,11 @@ class CodeGenerator:
 		self.target = target  # Target language for code generation
 		self.statement_visitor = StatementVisitor(target)  # Handles control flow (Persona 3)
 		self.data_structure_generator = DataStructureGenerator(target)  # Handles collections (Persona 3)
-		self.expr_generator = ExprGenerator(target)  # Handles expressions and literals (Persona 2)
-		self.function_generator = FunctionGenerator(target)  # Handles functions and scopes (Persona 2)
+		# Create a shared ScopeManager for generators that need scope tracking
+		self.scope = ScopeManager()
+		# ExprGenerator expects an optional scope; pass the shared ScopeManager
+		self.expr_generator = ExprGenerator(scope=self.scope)  # Handles expressions and literals (Persona 2)
+		self.function_generator = FunctionGenerator(self.scope)  # Handles functions and scopes (Persona 2)
 		# TODO(Andres): Integrate DynamicType system and helpers for dynamic typing in C++ (Persona 1)
 
 	def visit(self, node) -> str:

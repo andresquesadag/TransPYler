@@ -89,7 +89,7 @@ class BasicStatementGenerator:
         rhs_code = self.expr.emit(node.value)
 
         # Declare variable on first assignment
-        if not self.scope.exist(name):
+        if not self.scope.exists(name):
             self.scope.declare(name)
             return f"DynamicType {name} = {rhs_code};"
         

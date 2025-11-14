@@ -56,7 +56,7 @@ class FunctionGenerator:
 		self.scope.push()
 		try:
 			for n in param_names:
-				if not self.scope.exist(n):
+				if not self.scope.exists(n):
 					self.scope.declare(n)
 			#  ------- Function Body -------
 			body_lines: List[str] = []
@@ -75,6 +75,19 @@ class FunctionGenerator:
 			return "\n".join(lines)
 		finally:
 			self.scope.pop()
+
+	def visit(self, node: FunctionDef) -> str:
+		"""
+		Alias for visitor-style dispatch. Keeps FunctionGenerator compatible with
+		CodeGenerator which expects a `visit(node)` method on sub-generators.
+
+		Args:
+			node (FunctionDef): AST node representing a function definition.
+
+		Returns:
+			str: Generated C++ code for the function.
+		"""
+		return self.emit(node)
 
 	def _emit_stmt(self, stmt: AstNode) -> str:
 		if isinstance(stmt, (Assign, ExprStmt, Return)):

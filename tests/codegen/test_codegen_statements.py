@@ -30,7 +30,7 @@ class TestBasicStatementGeneratorAssign:
     def test_assign_first_declaration(self):
         """Test first assignment declaration (new variable)."""
         stmt = Assign(target=Identifier(name="x"), value=LiteralExpr(value=10))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "DynamicType x = DynamicType(10);" in code
         # Verify variable is now in scope
         assert self.scope.exists("x")
@@ -39,18 +39,18 @@ class TestBasicStatementGeneratorAssign:
         """Test reassignment to existing variable."""
         self.scope.declare("x")
         stmt = Assign(target=Identifier(name="x"), value=LiteralExpr(value=20))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "x = DynamicType(20);" in code
         assert "DynamicType x" not in code  # Should not redeclare
 
     def test_assign_multiple_variables(self):
         """Test assigning to different variables."""
         stmt1 = Assign(target=Identifier(name="x"), value=LiteralExpr(value=1))
-        code1 = self.gen.emit(stmt1)
+        code1 = self.gen.visit(stmt1)
         assert "DynamicType x = DynamicType(1);" in code1
 
         stmt2 = Assign(target=Identifier(name="y"), value=LiteralExpr(value=2))
-        code2 = self.gen.emit(stmt2)
+        code2 = self.gen.visit(stmt2)
         assert "DynamicType y = DynamicType(2);" in code2
 
     def test_assign_with_expression(self):
@@ -61,14 +61,14 @@ class TestBasicStatementGeneratorAssign:
             target=Identifier(name="c"),
             value=BinaryExpr(left=Identifier(name="a"), op="+", right=Identifier(name="b"))
         )
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "DynamicType c = ((a) + (b));" in code
 
     def test_assign_non_identifier_target_raises_error(self):
         """Test that non-identifier targets raise NotImplementedError."""
         stmt = Assign(target=LiteralExpr(value=10), value=LiteralExpr(value=20))
         with pytest.raises(NotImplementedError):
-            self.gen.emit(stmt)
+            self.gen.visit(stmt)
 
 
 # ============ BasicStatementGenerator Expression Statement Tests ============
@@ -83,13 +83,13 @@ class TestBasicStatementGeneratorExprStmt:
     def test_expr_stmt_literal(self):
         """Test expression statement with literal."""
         stmt = ExprStmt(value=LiteralExpr(value=42))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "DynamicType(42);" in code
 
     def test_expr_stmt_function_call(self):
         """Test expression statement with function call."""
         stmt = ExprStmt(value=CallExpr(callee=Identifier(name="print"), args=[LiteralExpr(value="hi")]))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "_fn_print(DynamicType(std::string(\"hi\")));" in code
 
 
@@ -105,20 +105,20 @@ class TestBasicStatementGeneratorReturn:
     def test_return_no_value(self):
         """Test return without value."""
         stmt = Return(value=None)
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "return DynamicType();" in code
 
     def test_return_with_literal(self):
         """Test return with literal value."""
         stmt = Return(value=LiteralExpr(value=42))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "return DynamicType(42);" in code
 
     def test_return_with_identifier(self):
         """Test return with identifier."""
         self.scope.declare("x")
         stmt = Return(value=Identifier(name="x"))
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "return x;" in code
 
     def test_return_with_expression(self):
@@ -128,7 +128,7 @@ class TestBasicStatementGeneratorReturn:
         stmt = Return(
             value=BinaryExpr(left=Identifier(name="a"), op="+", right=Identifier(name="b"))
         )
-        code = self.gen.emit(stmt)
+        code = self.gen.visit(stmt)
         assert "return ((a) + (b));" in code
 
 

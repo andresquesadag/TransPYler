@@ -20,11 +20,11 @@ DynamicType _fn_unary_test(DynamicType a) {
 }
 
 DynamicType _fn_call_test() {
-	return _fn_add(DynamicType(), DynamicType());
+	return _fn_add(DynamicType(1), DynamicType(2));
 }
 
 int main() {
-  DynamicType g = DynamicType();
-  g = ((g) + (DynamicType()));
+  DynamicType g = DynamicType(10);
+  g = ((g) + (DynamicType(5)));
   return 0;
 }

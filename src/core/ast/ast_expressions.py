@@ -14,7 +14,7 @@ class LiteralExpr(AstNode):
     """
     Represents a literal value(numbers, strings, True/False/None (and basic collections after)).
     """
-    value: Any = None
+    value: Any = field(default=None)
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Identifier(AstNode):
     """
     Represents an identifier (variable or function name).
     """
-    name: str = ""
+    name: str = field(default="")
 
 
 # ---------- Operators ----------
@@ -31,8 +31,8 @@ class UnaryExpr(AstNode):
     """
     Represents a unary operation, e.g. -x, +y, not z
     """
-    op: str = ""
-    operand: Optional[AstNode] = None
+    op: str = field(default="")
+    operand: Optional[AstNode] = field(default=None)
 
 
 @dataclass
@@ -40,9 +40,9 @@ class BinaryExpr(AstNode):
     """
     Represents a binary operation, e.g. x + y, a * b, c ** d
     """
-    left: Optional[AstNode] = None
-    op: str = ""  # "PLUS", "MINUS", "TIMES", "POWER", etc. (token o symbol)
-    right: Optional[AstNode] = None
+    left: Optional[AstNode] = field(default=None)
+    op: str = field(default="")  # "PLUS", "MINUS", "TIMES", "POWER", etc. (token o symbol)
+    right: Optional[AstNode] = field(default=None)
 
 
 @dataclass
@@ -50,16 +50,16 @@ class ComparisonExpr(AstNode):
     """
     Represents a comparison operation, e.g. x < y, a == b
     """
-    left: Optional[AstNode] = None
-    op: str = ""  # "EQUALS", "LESS_THAN", ...
-    right: Optional[AstNode] = None
+    left: Optional[AstNode] = field(default=None)
+    op: str = field(default="")  # "EQUALS", "LESS_THAN", ...
+    right: Optional[AstNode] = field(default=None)
     # Note: could be chained comparisons (a < b < c) but for simplicity, we keep it binary
 
 
 # ---------- Calls ----------
 @dataclass
 class CallExpr(AstNode):
-    callee: Optional[AstNode] = None  # Identifier, but could be more complex (e.g., obj.method)
+    callee: Optional[AstNode] = field(default=None)  # Identifier, but could be more complex (e.g., obj.method)
     args: List[AstNode] = field(default_factory=list)  # positional arguments
 
 

@@ -50,7 +50,7 @@ class BasicStatementGenerator:
         self.scope = scope
         self.expr = ExprGenerator(scope=self.scope)
 
-    def emit(self, node: AstNode) -> str:
+    def visit(self, node: AstNode) -> str:
         """
         Generate C++ code for a statement node.        
         This method dispatches to the appropriate visit_* method based on node type.
@@ -86,7 +86,7 @@ class BasicStatementGenerator:
             )
         
         name = node.target.name
-        rhs_code = self.expr.emit(node.value)
+        rhs_code = self.expr.visit(node.value)
 
         # Declare variable on first assignment
         if not self.scope.exists(name):
@@ -105,7 +105,7 @@ class BasicStatementGenerator:
         Returns:
             str: C++ expression code terminated with semicolon.
         """
-        code = self.expr.emit(node.value)
+        code = self.expr.visit(node.value)
         return f"{code};"
     
     # ---------- Return Statements ----------
@@ -119,4 +119,4 @@ class BasicStatementGenerator:
         """
         if node.value is None:
             return "return DynamicType();"
-        return f"return {self.expr.emit(node.value)};"
+        return f"return {self.expr.visit(node.value)};"

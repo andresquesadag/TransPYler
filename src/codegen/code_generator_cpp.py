@@ -41,7 +41,7 @@ class CodeGeneratorCpp:
 
         # 2) funciones primero
         for f in fun_defs:
-            parts.append(self.func_gen.emit(f))
+            parts.append(self.func_gen.visit(f))
             parts.append("")
 
         # 3) global en main()
@@ -58,7 +58,7 @@ class CodeGeneratorCpp:
     def _emit_top_stmt(self, stmt: AstNode) -> List[str]:
         # statements básicos (tu parte)
         if isinstance(stmt, (Assign, ExprStmt, Return)):
-            return ["  " + self.basic_stmt.emit(stmt)]
+            return ["  " + self.basic_stmt.visit(stmt)]
         # control de flujo (Persona 3)
         if isinstance(stmt, (If, While, For, Block)):
             block_code = self.ctrl_stmt.visit(stmt)

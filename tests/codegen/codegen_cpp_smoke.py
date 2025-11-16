@@ -57,13 +57,13 @@ fn_call = FunctionDef(
     name="call_test",
     params=[],
     body=[
-        Return(value=CallExpr(callee=Identifier(name="add"), args=[LiteralExpr(1), LiteralExpr(2)]))
+        Return(value=CallExpr(callee=Identifier(name="add"), args=[LiteralExpr(value=1), LiteralExpr(value=2)]))
     ]
 )
 
 # Global statements to appear in main(): declare and reassign
-global_assign1 = Assign(target=Identifier(name="g"), value=LiteralExpr(10))
-global_reassign = Assign(target=Identifier(name="g"), value=BinaryExpr(left=Identifier(name="g"), op="+", right=LiteralExpr(5)))
+global_assign1 = Assign(target=Identifier(name="g"), value=LiteralExpr(value=10))
+global_reassign = Assign(target=Identifier(name="g"), value=BinaryExpr(left=Identifier(name="g"), op="+", right=LiteralExpr(value=5)))
 
 # Build module with functions and globals
 module = Module(body=[fn_add, fn_pow, fn_unary, fn_call, global_assign1, global_reassign])

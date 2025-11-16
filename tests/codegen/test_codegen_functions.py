@@ -1,16 +1,14 @@
 """
-test_codegen_functions.py
+test_codegen_functions.py David 
 -------------------------
-Unit tests for FunctionGenerator (Persona 2): function definitions, parameters, scope, and returns.
+Unit tests for FunctionGenerator: function definitions, parameters, scope, and returns.
 
 Tests validate code generation for:
-- Function headers with parameters (DynamicType typing)
+- Function headers with parameters (DynamicType typing
 - Function bodies with assignments and returns
 - Automatic return insertion when none exists
 - Scope push/pop for function-local variables
 - Complex functions with multiple statements
-
-All tests use pytest and validate generated C++ code via string assertions.
 """
 
 import pytest

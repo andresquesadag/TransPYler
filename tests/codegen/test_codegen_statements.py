@@ -1,14 +1,12 @@
 """
-test_codegen_statements.py
+test_codegen_statements.py David
 ---------------------------
-Unit tests for BasicStatementGenerator (Persona 2): assignments, expression statements, and returns.
+Unit tests for BasicStatementGenerator: assignments, expression statements, and returns.
 
 Tests validate code generation for:
 - Assignments: first declaration vs reassignment with DynamicType
 - Expression statements: literal and function call expressions with semicolons
 - Return statements: no value, literal, identifier, and complex expressions
-
-All tests use pytest and validate generated C++ code via string assertions.
 """
 
 import pytest

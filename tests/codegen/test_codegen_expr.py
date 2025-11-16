@@ -1,7 +1,7 @@
 """
-test_codegen_expr.py
+test_codegen_expr.py David 
 --------------------
-Unit tests for ExprGenerator (Persona 2): expressions, literals, operators, and function calls.
+Unit tests for ExprGenerator: expressions, literals, operators, and function calls.
 
 Tests validate code generation for:
 - Literal expressions (int, float, string, bool, None)
@@ -9,8 +9,6 @@ Tests validate code generation for:
 - Unary operations (-, not)
 - Binary operations (+, -, *, /, %, ==, !=, <, and, or, **)
 - Function call expressions (no args, single arg, multiple args, nested expressions)
-
-All tests use pytest and validate generated C++ code via string assertions.
 """
 
 import pytest

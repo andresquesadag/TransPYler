@@ -1,8 +1,14 @@
-﻿from src.codegen.code_generator_cpp import CodeGeneratorCpp
-from src.core import Module, FunctionDef, Identifier, BinaryExpr, UnaryExpr, LiteralExpr, CallExpr
-from src.core import Assign, ExprStmt, Return
+# Smoke test for C++ code generation David
 
 import sys
+import os
+
+# Add the project root to sys.path so imports work correctly
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from src.codegen.code_generator_cpp import CodeGeneratorCpp
+from src.core import Module, FunctionDef, Identifier, BinaryExpr, UnaryExpr, LiteralExpr, CallExpr
+from src.core import Assign, ExprStmt, Return
 
 # Use the C++ oriented generator which creates a full .cpp file (preamble + functions + main)
 cg = CodeGeneratorCpp()
@@ -51,18 +57,18 @@ fn_call = FunctionDef(
     name="call_test",
     params=[],
     body=[
-        Return(value=CallExpr(callee=Identifier(name="add"), args=[LiteralExpr(1), LiteralExpr(2)]))
+        Return(value=CallExpr(callee=Identifier(name="add"), args=[LiteralExpr(value=1), LiteralExpr(value=2)]))
     ]
 )
 
 # Global statements to appear in main(): declare and reassign
-global_assign1 = Assign(target=Identifier(name="g"), value=LiteralExpr(10))
-global_reassign = Assign(target=Identifier(name="g"), value=BinaryExpr(left=Identifier(name="g"), op="+", right=LiteralExpr(5)))
+global_assign1 = Assign(target=Identifier(name="g"), value=LiteralExpr(value=10))
+global_reassign = Assign(target=Identifier(name="g"), value=BinaryExpr(left=Identifier(name="g"), op="+", right=LiteralExpr(value=5)))
 
 # Build module with functions and globals
 module = Module(body=[fn_add, fn_pow, fn_unary, fn_call, global_assign1, global_reassign])
 
-out_file = 'pruebaPersona2_all.cpp'
+out_file = 'resultado_codegen_cpp_smoke.cpp'
 code = cg.generate(module)
 
 # write the file
@@ -71,7 +77,7 @@ with open(out_file, 'w', encoding='utf-8') as f:
 
 print('WROTE', out_file)
 
-# Simple textual checks to validate persona2 features
+# Simple textual checks to validate the features
 checks = [
     ("_fn_add(", "function 'add' header"),
     ("builtins::pow(", "pow mapping for '**'"),
@@ -93,4 +99,4 @@ if failed:
         print(f" - missing '{s}'  ({d})")
     sys.exit(2)
 
-print('\nAll persona2 smoke checks passed.')
+print('\nAll codegen_cpp_smoke checks passed.')

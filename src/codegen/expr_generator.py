@@ -38,10 +38,7 @@ class ExprGenerator:
 	def __init__(self, scope: Optional[object] = None):
 		self.scope = scope
 
-	def emit(self, node: AstNode) -> str:
-		return self.visit(node)
-
-	# Dispatcher
+	# Dispatcher (Visitor Pattern)
 	def visit(self, node: AstNode) -> str:
 		m = getattr(self, f"visit_{type(node).__name__}", None)
 		if not m:

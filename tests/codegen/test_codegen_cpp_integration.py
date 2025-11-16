@@ -1,16 +1,14 @@
 """
-test_codegen_cpp_integration.py
+test_codegen_cpp_integration.py David
 -------------------------------
-Integration tests for CodeGeneratorCpp (Persona 2): end-to-end C++ code generation from Module ASTs.
+Integration tests for CodeGeneratorCpp
 
-Tests validate the full code generation pipeline:
+Tests validate the full code generation: 
 - Preamble generation (#include directives, using namespace)
 - Function generation with parameters and bodies
 - Global variable declarations and assignments in main()
 - Special operator mappings (e.g., ** to builtins::pow)
 - Complete Module → .cpp transformation
-
-All tests use pytest and validate generated C++ code via string assertions.
 """
 
 import pytest

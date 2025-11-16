@@ -1,16 +1,14 @@
 """
-test_codegen_functions.py
+test_codegen_functions.py David 
 -------------------------
-Unit tests for FunctionGenerator (Persona 2): function definitions, parameters, scope, and returns.
+Unit tests for FunctionGenerator: function definitions, parameters, scope, and returns.
 
 Tests validate code generation for:
-- Function headers with parameters (DynamicType typing)
+- Function headers with parameters (DynamicType typing
 - Function bodies with assignments and returns
 - Automatic return insertion when none exists
 - Scope push/pop for function-local variables
 - Complex functions with multiple statements
-
-All tests use pytest and validate generated C++ code via string assertions.
 """
 
 import pytest
@@ -34,7 +32,7 @@ class TestFunctionGeneratorBasic:
     def test_function_no_params_no_body(self):
         """Test function with no parameters and no body."""
         fn = FunctionDef(name="empty", params=[], body=[])
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "DynamicType _fn_empty()" in code
         assert "return DynamicType();" in code
         assert code.endswith("}")
@@ -46,7 +44,7 @@ class TestFunctionGeneratorBasic:
             params=[Identifier(name="a"), Identifier(name="b")],
             body=[]
         )
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "DynamicType _fn_add(DynamicType a, DynamicType b)" in code
 
     def test_function_with_assignment(self):
@@ -58,7 +56,7 @@ class TestFunctionGeneratorBasic:
                 Assign(target=Identifier(name="x"), value=LiteralExpr(value=10))
             ]
         )
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "DynamicType x = DynamicType(10);" in code
         assert "_fn_test" in code
 
@@ -71,7 +69,7 @@ class TestFunctionGeneratorBasic:
                 Return(value=LiteralExpr(value=42))
             ]
         )
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "return DynamicType(42);" in code
         # Should not add automatic return when explicit return exists
         assert code.count("return") == 1
@@ -85,7 +83,7 @@ class TestFunctionGeneratorBasic:
                 ExprStmt(value=LiteralExpr(value=10))
             ]
         )
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "return DynamicType();" in code
 
     def test_function_scope_push_pop(self):
@@ -98,7 +96,7 @@ class TestFunctionGeneratorBasic:
             ]
         )
         initial_scope_count = len(self.scope.all_scopes())
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         final_scope_count = len(self.scope.all_scopes())
         # Scope should be back to initial state after function generation
         assert initial_scope_count == final_scope_count
@@ -116,7 +114,7 @@ class TestFunctionGeneratorBasic:
                 Return(value=Identifier(name="sum"))
             ]
         )
-        code = self.gen.emit(fn)
+        code = self.gen.visit(fn)
         assert "_fn_add(DynamicType a, DynamicType b)" in code
         assert "DynamicType sum = ((a) + (b));" in code
         assert "return sum;" in code

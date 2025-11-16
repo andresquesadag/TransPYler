@@ -38,9 +38,9 @@ class FunctionGenerator:
 		self.basic_stmt = BasicStatementGenerator(self.scope)
 		self.ctrl_stmt = StatementVisitor(target="cpp")
 		
-	def emit(self, node: FunctionDef) -> str:
+	def visit(self, node: FunctionDef) -> str:
 		if not isinstance(node, FunctionDef):
-			raise TypeError("FunctionGenerator.emit() expects a FunctionDef")
+			raise TypeError("FunctionGenerator.visit() expects a FunctionDef")
 
 	#  ------- Function Definition -------
 		param_names: List[str] = []
@@ -76,22 +76,9 @@ class FunctionGenerator:
 		finally:
 			self.scope.pop()
 
-	def visit(self, node: FunctionDef) -> str:
-		"""
-		Alias for visitor-style dispatch. Keeps FunctionGenerator compatible with
-		CodeGenerator which expects a `visit(node)` method on sub-generators.
-
-		Args:
-			node (FunctionDef): AST node representing a function definition.
-
-		Returns:
-			str: Generated C++ code for the function.
-		"""
-		return self.emit(node)
-
 	def _emit_stmt(self, stmt: AstNode) -> str:
 		if isinstance(stmt, (Assign, ExprStmt, Return)):
-			return self.basic_stmt.emit(stmt)
+			return self.basic_stmt.visit(stmt)
 		if isinstance(stmt, (If, While, For, Block)):
 			return self.ctrl_stmt.visit(stmt)
 		raise NotImplementedError(f"[FunctionGenerator] Statement type {type(stmt).__name__} not supported")

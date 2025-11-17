@@ -1,4 +1,3 @@
-
 """
 function_generator.py
 ---------------------
@@ -22,11 +21,11 @@ from .basic_statement_generator import BasicStatementGenerator
 from .statement_generator import StatementVisitor
 
 class FunctionGenerator:
-	"""
-	Generates code for function definitions and scope management.
-	Handles both Python and C++ targets, including parameter and return statement generation.
-	Persona 2 responsibility: Implements function translation and helpers.
-	"""
+    """
+    Generates code for function definitions and scope management.
+    Handles both Python and C++ targets, including parameter and return statement generation.
+    Persona 2 responsibility: Implements function translation and helpers.
+    """
 
 	def __init__(self, scope: ScopeManager):
 		"""

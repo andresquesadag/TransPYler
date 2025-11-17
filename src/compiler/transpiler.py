@@ -9,11 +9,6 @@ Key Features:
 - Entry point for converting source code to C++ files.
 """
 
-"""
-Transpiler: Modular controller for the C++ transpilation process.
-Uses the parser and code generation visitors to produce C++ code from the AST.
-"""
-
 from ..parser.parser import Parser
 #from ..codegen.code_generator import CodeGenerator
 from ..codegen.code_generator_cpp import CodeGeneratorCpp

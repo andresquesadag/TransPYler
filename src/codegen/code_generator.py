@@ -26,10 +26,10 @@ import os
 
 
 class CodeGenerator:
-	"""
-	Main code generation orchestrator.
-	Integrates all codegen visitors and provides file output for Python and C++.
-	"""
+    """
+    Main code generation orchestrator.
+    Integrates all codegen visitors and provides file output for Python and C++.
+    """
 
 	def __init__(self, target: str = "python"):
 		"""
@@ -63,24 +63,25 @@ class CodeGenerator:
 			return self.function_generator.visit(node)
 		return self.statement_visitor.visit(node)
 
-	def generate_file(self, node, filename: str = "output.cpp"):
-		"""
-		Generate code for the given AST node and write it to a file.
-		Args:
-			node: Root AST node to generate code for.
-			filename (str): Output filename.
-		Returns:
-			str: The filename where code was written.
-		Adds C++ STL headers if target is 'cpp'.
-		"""
-		code = self.visit(node)  # Generate code from AST
-		if self.target == "cpp":
-			# Add C++ STL headers and namespace
-			code = (
-				"#include <vector>\n#include <tuple>\n#include <set>\n#include <map>\n#include <iostream>\nusing namespace std;\n\n" + code
-			)
-			# TODO(Andres): Include definition of DynamicType and operator overloads in C++ (Persona 1)
-		# Write generated code to file
-		with open(filename, "w") as f:
-			f.write(code)
-		return filename  # Return the output filename
+    def generate_file(self, node, filename: str = "output.cpp"):
+        """
+        Generate code for the given AST node and write it to a file.
+        Args:
+                node: Root AST node to generate code for.
+                filename (str): Output filename.
+        Returns:
+                str: The filename where code was written.
+        Adds C++ STL headers if target is 'cpp'.
+        """
+        code = self.visit(node)  # Generate code from AST
+        if self.target == "cpp":
+            # Add C++ STL headers and namespace
+            code = (
+                "#include <vector>\n#include <tuple>\n#include <set>\n#include <map>\n#include <iostream>\nusing namespace std;\n\n"
+                + code
+            )
+            # TODO(Andres): Include definition of DynamicType and operator overloads in C++ (Persona 1)
+        # Write generated code to file
+        with open(filename, "w") as f:
+            f.write(code)
+        return filename  # Return the output filename

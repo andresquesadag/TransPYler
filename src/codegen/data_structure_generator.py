@@ -22,21 +22,19 @@ Supports both Python and C++ targets, automatically deducing types for C++ STL c
 """
 
 
-
-
 class DataStructureGenerator:
-	"""
-	Generates code for data structure JSON nodes (lists, tuples, sets, dicts).
-	Handles both Python and C++ targets, including type deduction for C++ STL containers.
-	"""
+    """
+    Generates code for data structure JSON nodes (lists, tuples, sets, dicts).
+    Handles both Python and C++ targets, including type deduction for C++ STL containers.
+    """
 
-	def __init__(self, target: str = "python"):
-		"""
-		Initialize the DataStructureGenerator.
-		Args:
-			target (str): Target language ('python' or 'cpp').
-		"""
-		self.target = target
+    def __init__(self, target: str = "python"):
+        """
+        Initialize the DataStructureGenerator.
+        Args:
+                target (str): Target language ('python' or 'cpp').
+        """
+        self.target = target
 
 	def visit(self, node) -> str:
 		"""
@@ -52,15 +50,15 @@ class DataStructureGenerator:
 			return visitor(node)
 		return self.generic_visit(node)
 
-	def generic_visit(self, node) -> str:
-		"""
-		Fallback for unsupported nodes.
-		Args:
-			node: AST node.
-		Returns:
-			str: TODO comment for unsupported node type.
-		"""
-		return f"// TODO: {type(node).__name__}"
+    def generic_visit(self, node) -> str:
+        """
+        Fallback for unsupported nodes.
+        Args:
+                node: AST node.
+        Returns:
+                str: TODO comment for unsupported node type.
+        """
+        return f"// TODO: {type(node).__name__}"
 
 	# --- Python ---
 	def visit_ListExpr_python(self, node) -> str:

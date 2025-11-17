@@ -4,14 +4,12 @@
 #define BUILTINS_HPP
 
 #include "DynamicType.hpp"
-#include <string>
 
 // Python built-in functions
 
 // print() - Output to console
-void print(const DynamicType& value);
-void print(const DynamicType& v1, const DynamicType& v2);
-void print(const DynamicType& v1, const DynamicType& v2, const DynamicType& v3);
+template<typename... Args> // Folding template to accept multiple arguments
+void print(const Args&... args);
 
 // len() - Get length of sequence
 DynamicType len(const DynamicType& value);
@@ -23,9 +21,9 @@ DynamicType range(int start, int stop, int step);
 
 // Type conversion functions
 DynamicType str(const DynamicType& value);
-DynamicType int_(const DynamicType& value);  // int_ to avoid C++ keyword
-DynamicType float_(const DynamicType& value); // float_ to avoid C++ keyword
-DynamicType bool_(const DynamicType& value);  // bool_ to avoid C++ keyword
+DynamicType int_(const DynamicType& value);
+DynamicType float_(const DynamicType& value);
+DynamicType bool_(const DynamicType& value); 
 
 // Math functions
 DynamicType abs(const DynamicType& value);

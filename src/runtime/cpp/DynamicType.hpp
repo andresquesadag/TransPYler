@@ -17,11 +17,9 @@
  * Supports: int, double, string, bool, None (nullptr)
  * and collections: list, dict
  */
-class DynamicType
-{
+class DynamicType{
   public:
-    enum class Type
-    {
+    enum class Type {
       NONE,
       INT,
       DOUBLE,

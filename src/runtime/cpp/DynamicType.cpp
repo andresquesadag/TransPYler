@@ -1,3 +1,4 @@
+// Copyright (c) 2025 Andres Quesada, David Obando, Randy Aguero
 #include "DynamicType.hpp"
 
 int DynamicType::toInt() const {
@@ -58,7 +59,7 @@ std::string DynamicType::toString() const {
     } else if (type == Type::NONE) {
       return "None";
     } else if (type == Type::LIST) {
-      const auto &list = std::any_cast<const std::vector<DynamicType>&>(value);
+      const std::vector<DynamicType> &list = std::any_cast<const std::vector<DynamicType>&>(value);
       std::string result = "[";
       for (size_t i = 0; i < list.size(); ++i) {
         if (i > 0) result += ", ";
@@ -67,10 +68,10 @@ std::string DynamicType::toString() const {
       result += "]";
       return result;
     } else if (type == Type::DICT) {
-      const auto &dict = std::any_cast<const std::map<std::string, DynamicType>&>(value);
+      const std::map<std::string, DynamicType> &dict = std::any_cast<const std::map<std::string, DynamicType>&>(value);
       std::string result = "{";
       bool first = true;
-      for (const auto &kv : dict) {
+      for (const std::pair<const std::string, DynamicType> &kv : dict) {
         if (!first) result += ", ";
         result += "'" + kv.first + "': " + kv.second.toString();
         first = false;

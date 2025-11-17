@@ -31,37 +31,45 @@ class CodeGenerator:
     Integrates all codegen visitors and provides file output for Python and C++.
     """
 
-	def __init__(self, target: str = "python"):
-		"""
-		Initialize the CodeGenerator.
-		Args:
-			target (str): Target language ('python' or 'cpp').
-		Sets up all codegen visitors for statements, data structures, expressions, and functions.
-		"""
-		self.target = target  # Target language for code generation
-		self.statement_visitor = StatementVisitor(target)  # Handles control flow (Persona 3)
-		self.data_structure_generator = DataStructureGenerator(target)  # Handles collections (Persona 3)
-		# Create a shared ScopeManager for generators that need scope tracking
-		self.scope = ScopeManager()
-		# ExprGenerator expects an optional scope; pass the shared ScopeManager
-		self.expr_generator = ExprGenerator(scope=self.scope)  # Handles expressions and literals (Persona 2)
-		self.function_generator = FunctionGenerator(self.scope)  # Handles functions and scopes (Persona 2)
-		# TODO(Andres): Integrate DynamicType system and helpers for dynamic typing in C++ (Persona 1)
+    def __init__(self, target: str = "python"):
+        """
+        Initialize the CodeGenerator.
+        Args:
+                target (str): Target language ('python' or 'cpp').
+        Sets up all codegen visitors for statements, data structures, expressions, and functions.
+        """
+        self.target = target  # Target language for code generation
+        self.statement_visitor = StatementVisitor(
+            target
+        )  # Handles control flow (Persona 3)
+        self.data_structure_generator = DataStructureGenerator(
+            target
+        )  # Handles collections (Persona 3)
+        # Create a shared ScopeManager for generators that need scope tracking
+        self.scope = ScopeManager()
+        # ExprGenerator expects an optional scope; pass the shared ScopeManager
+        self.expr_generator = ExprGenerator(
+            scope=self.scope
+        )  # Handles expressions and literals (Persona 2)
+        self.function_generator = FunctionGenerator(
+            self.scope
+        )  # Handles functions and scopes (Persona 2)
+        # TODO(Andres): Integrate DynamicType system and helpers for dynamic typing in C++ (Persona 1)
 
-	def visit(self, node) -> str:
-		"""
-		Dispatch code generation to the appropriate visitor based on node type.
-		Args:
-			node: AST node object
-		Returns:
-			str: Generated code for the node.
-		"""
-		node_type = node.__class__.__name__
-		if node_type.endswith("Expr") or node_type == "Identifier":
-			return self.expr_generator.visit(node)
-		if node_type.endswith("FunctionDef"):
-			return self.function_generator.visit(node)
-		return self.statement_visitor.visit(node)
+    def visit(self, node) -> str:
+        """
+        Dispatch code generation to the appropriate visitor based on node type.
+        Args:
+                node: AST node object
+        Returns:
+                str: Generated code for the node.
+        """
+        node_type = node.__class__.__name__
+        if node_type.endswith("Expr") or node_type == "Identifier":
+            return self.expr_generator.visit(node)
+        if node_type.endswith("FunctionDef"):
+            return self.function_generator.visit(node)
+        return self.statement_visitor.visit(node)
 
     def generate_file(self, node, filename: str = "output.cpp"):
         """

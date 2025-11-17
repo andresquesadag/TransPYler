@@ -11,6 +11,9 @@ Key Features:
 - Includes helpers for type deduction in C++ for for-each loops and other control flow helpers.
 """
 
+# TODO(any): All node arguments are unused. Consider removing them or implementing their usage.
+# TODO(any): All indentation in this file is failing linting checks. Fix indentation.
+
 from typing import List, Optional
 
 
@@ -40,64 +43,64 @@ class StatementVisitor:
         """
         return self.indent_str * self.indent_level
 
-	def visit(self, node) -> str:
-		"""
-		Dispatches node to the appropriate handler based on its type and target language.
-		Args:
-			node: AST node object
-		Returns:
-			str: Generated code for the node.
-		"""
-		method_name = f"visit_{node.__class__.__name__}_{self.target}"
-		visitor = getattr(self, method_name, None)
-		if visitor:
-			return visitor(node)
-		return self.generic_visit(node)
+    def visit(self, node) -> str:
+        """
+        Dispatches node to the appropriate handler based on its type and target language.
+        Args:
+                node: AST node object
+        Returns:
+                str: Generated code for the node.
+        """
+        method_name = f"visit_{node.__class__.__name__}_{self.target}"
+        visitor = getattr(self, method_name, None)
+        if visitor:
+                return visitor(node) # TODO(any): Visitor is not callable
+        return self.generic_visit(node)
 
-	def generic_visit(self, node) -> str:
-		"""
-		Fallback for unsupported nodes.
-		Args:
-			node: AST node object.
-		Returns:
-			str: TODO comment for unsupported node type.
-		"""
-		return f"// TODO: {node.__class__.__name__}"
+    def generic_visit(self, node) -> str:
+        """
+        Fallback for unsupported nodes.
+        Args:
+                node: AST node object.
+        Returns:
+                str: TODO comment for unsupported node type.
+        """
+        return f"// TODO: {node.__class__.__name__}"
 
-	# --- Python ---
-	def visit_Block_python(self, node):
-		"""
-		Generates Python code for a block of statements.
-		Args:
-			node (Block): AST node for a block.
-		Returns:
-			str: Python code for the block.
-		"""
-		code = []
-		self.indent_level += 1
-		for stmt in node.statements:
-			code.append(self.indent() + self.visit(stmt))
-		self.indent_level -= 1
-		return "\n".join(code)
+    # --- Python ---
+    def visit_Block_python(self, node):
+        """
+        Generates Python code for a block of statements.
+        Args:
+                node (Block): AST node for a block.
+        Returns:
+                str: Python code for the block.
+        """
+        code = []
+        self.indent_level += 1
+        for stmt in node.statements:
+            code.append(self.indent() + self.visit(stmt))
+        self.indent_level -= 1
+        return "\n".join(code)
 
-	def visit_If_python(self, node):
-		"""
-		Generates Python code for an if statement.
-		Args:
-			node (If): AST node for an if statement.
-		Returns:
-			str: Python code for the if statement.
-		"""
-		code = []
-		code.append(f"{self.indent()}if {self.visit(node.cond)}:")
-		code.append(self.visit(node.body))
-		for cond, block in node.elifs:
-			code.append(f"{self.indent()}elif {self.visit(cond)}:")
-			code.append(self.visit(block))
-		if node.orelse:
-			code.append(f"{self.indent()}else:")
-			code.append(self.visit(node.orelse))
-		return "\n".join(code)
+    def visit_If_python(self, node):
+        """
+        Generates Python code for an if statement.
+        Args:
+                node (If): AST node for an if statement.
+        Returns:
+                str: Python code for the if statement.
+        """
+        code = []
+        code.append(f"{self.indent()}if {self.visit(node.cond)}:")
+        code.append(self.visit(node.body))
+        for cond, block in node.elifs:
+            code.append(f"{self.indent()}elif {self.visit(cond)}:")
+            code.append(self.visit(block))
+        if node.orelse:
+            code.append(f"{self.indent()}else:")
+            code.append(self.visit(node.orelse))
+        return "\n".join(code)
 
     def visit_While_python(self, node):
         """
@@ -133,7 +136,7 @@ class StatementVisitor:
         Returns:
                 str: Python code for break.
         """
-        return f"break"
+        return "break"
 
     def visit_Continue_python(self, node):
         """
@@ -143,7 +146,7 @@ class StatementVisitor:
         Returns:
                 str: Python code for continue.
         """
-        return f"continue"
+        return "continue"
 
     def visit_Pass_python(self, node):
         """
@@ -153,7 +156,7 @@ class StatementVisitor:
         Returns:
                 str: Python code for pass.
         """
-        return f"pass"
+        return "pass"
 
     def visit_ListExpr_python(self, node):
         """
@@ -223,7 +226,6 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the for-each loop.
         """
-        # Helper: deduce element type
         iterable_code = self.visit(node.iterable)
         elem_type = self._deduce_cpp_type(node.iterable)
         code = [
@@ -240,7 +242,7 @@ class StatementVisitor:
         Returns:
                 str: C++ code for break.
         """
-        return f"break;"
+        return "break;"
 
     def visit_Continue_cpp(self, node):
         """
@@ -250,7 +252,7 @@ class StatementVisitor:
         Returns:
                 str: C++ code for continue.
         """
-        return f"continue;"
+        return "continue;"
 
     def visit_Pass_cpp(self, node):
         """
@@ -260,7 +262,7 @@ class StatementVisitor:
         Returns:
                 str: C++ code for pass (comment).
         """
-        return f"/* pass */"
+        return "/* pass */"
 
     def visit_ListExpr_cpp(self, node):
         """

@@ -1,7 +1,7 @@
 """
 BasicStatementGenerator
 -----------------------
-This module provides the BasicStatementGenerator class, which generates C++ code for basic 
+This module provides the BasicStatementGenerator class, which generates C++ code for basic
 statements including assignments, expression statements, and return statements.
 
 Key Features:
@@ -26,12 +26,12 @@ Restrictions:
 Usage:
     from src.codegen.basic_statement_generator import BasicStatementGenerator
     from src.codegen.scope_manager import ScopeManager
-    
+
     scope = ScopeManager()
     gen = BasicStatementGenerator(scope)
-    
+
     Generate code from AST nodes
-   
+
 """
 
 from src.core import AstNode, Assign, ExprStmt, Return, Identifier
@@ -40,10 +40,10 @@ from .scope_manager import ScopeManager
 
 
 class BasicStatementGenerator:
-   
+
     def __init__(self, scope: ScopeManager):
         """
-        Initialize the BasicStatementGenerator.        
+        Initialize the BasicStatementGenerator.
         Args:
             scope (ScopeManager): Scope manager for tracking variable declarations.
         """
@@ -52,13 +52,13 @@ class BasicStatementGenerator:
 
     def visit(self, node: AstNode) -> str:
         """
-        Generate C++ code for a statement node.        
+        Generate C++ code for a statement node.
         This method dispatches to the appropriate visit_* method based on node type.
-        All generated code is terminated with a semicolon where applicable.        
+        All generated code is terminated with a semicolon where applicable.
         Args:
-            node (AstNode): AST node representing a statement.            
+            node (AstNode): AST node representing a statement.
         Returns:
-            str: Generated C++ code.            
+            str: Generated C++ code.
         Raises:
             NotImplementedError: If the node type is not supported.
         """
@@ -67,16 +67,16 @@ class BasicStatementGenerator:
             raise NotImplementedError(
                 f"BasicStatementGenerator does not support node type {type(node).__name__}"
             )
-        return method(node)
-    
+        return method(node) # TODO(any): Fix this. "method()" is not callable
+
     # ---------- Assignment Statements ----------
     def visit_Assign(self, node: Assign) -> str:
         """
-        Generate C++ code for an assignment statement.               
+        Generate C++ code for an assignment statement.
         Args:
-            node (Assign): AST node representing an assignment.            
+            node (Assign): AST node representing an assignment.
         Returns:
-            str: C++ assignment code.          
+            str: C++ assignment code.
         Raises:
             NotImplementedError: If assignment target is not a simple identifier.
         """
@@ -84,7 +84,7 @@ class BasicStatementGenerator:
             raise NotImplementedError(
                 "Assignment only supports simple identifiers (no subscripts or attributes)"
             )
-        
+
         name = node.target.name
         rhs_code = self.expr.visit(node.value)
 
@@ -92,28 +92,28 @@ class BasicStatementGenerator:
         if not self.scope.exists(name):
             self.scope.declare(name)
             return f"DynamicType {name} = {rhs_code};"
-        
+
         # Reassign existing variable
         return f"{name} = {rhs_code};"
-    
+
     # ---------- Expression Statements ----------
     def visit_ExprStmt(self, node: ExprStmt) -> str:
         """
-        Generate C++ code for an expression statement.        
+        Generate C++ code for an expression statement.
         Args:
-            node (ExprStmt): AST node representing an expression statement.            
+            node (ExprStmt): AST node representing an expression statement.
         Returns:
             str: C++ expression code terminated with semicolon.
         """
         code = self.expr.visit(node.value)
         return f"{code};"
-    
+
     # ---------- Return Statements ----------
     def visit_Return(self, node: Return) -> str:
         """
         Generate C++ code for a return statement.
         Args:
-            node (Return): AST node representing a return statement.            
+            node (Return): AST node representing a return statement.
         Returns:
             str: C++ return statement code.
         """

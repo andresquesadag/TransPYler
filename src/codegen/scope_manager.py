@@ -70,35 +70,35 @@ class ScopeManager:
         """
         return self.scopes[-1]
 
-	def all_scopes(self):
-		"""
-		Returns a list of all scopes from outermost to innermost.
-		Useful for inspection or serialization.
-		"""
-		return list(self.scopes)
+    def all_scopes(self):
+        """
+        Returns a list of all scopes from outermost to innermost.
+        Useful for inspection or serialization.
+        """
+        return list(self.scopes)
 
- # -------- implementado por persona 2 --------
-	def push(self):
-		"""Alias de enter_scope()."""
-		self.enter_scope()
+    # -------- implementado por persona 2 --------
+    def push(self):
+        """Alias de enter_scope()."""
+        self.enter_scope()
 
-	def pop(self):
-		"""Alias de exit_scope(); no revienta si estás en global."""
-		if len(self.scopes) > 1:
-			self.scopes.pop()
-		else:
-			# Fail-soft: no lanzamos para no romper pipelines
-			pass
+    def pop(self):
+        """Alias de exit_scope(); no revienta si estás en global."""
+        if len(self.scopes) > 1:
+            self.scopes.pop()
+        else:
+            # Fail-soft: no lanzamos para no romper pipelines
+            pass
 
-	def reset(self):
-		"""Reinicia a un único scope global."""
-		self.scopes.clear()
-		self.enter_scope()
+    def reset(self):
+        """Reinicia a un único scope global."""
+        self.scopes.clear()
+        self.enter_scope()
 
-	def declare(self, name):
-		"""Declara un nombre en el scope actual."""
-		self.add_symbol(name, True)
+    def declare(self, name):
+        """Declara un nombre en el scope actual."""
+        self.add_symbol(name, True)
 
-	def exists(self, name) -> bool:
-		"""¿El nombre existe en algún scope visible?"""
-		return self.resolve_symbol(name) is not None
+    def exists(self, name) -> bool:
+        """¿El nombre existe en algún scope visible?"""
+        return self.resolve_symbol(name) is not None

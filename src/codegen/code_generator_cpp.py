@@ -1,10 +1,17 @@
-
 # NOTA: Lo hice como un Auxiliar para no travesear aun el code_generator.py
 
 from typing import List
 from src.core import (
-    AstNode, Module, FunctionDef, Block, If, While, For,
-    Assign, ExprStmt, Return
+    AstNode,
+    Module,
+    FunctionDef,
+    Block,
+    If,
+    While,
+    For,
+    Assign,
+    ExprStmt,
+    Return,
 )
 from .scope_manager import ScopeManager
 from .expr_generator import ExprGenerator
@@ -19,13 +26,14 @@ CPP_PREAMBLE = """#include <iostream>
 using namespace std;
 """
 
+
 class CodeGeneratorCpp:
     def __init__(self):
         self.scope = ScopeManager()
-        self.expr_gen   = ExprGenerator(scope=self.scope)           # Persona 2
-        self.basic_stmt = BasicStatementGenerator(scope=self.scope) # Persona 2
-        self.ctrl_stmt  = StatementVisitor(target="cpp")            # Persona 3
-        self.func_gen   = FunctionGenerator(scope=self.scope)       # Persona 2
+        self.expr_gen = ExprGenerator(scope=self.scope)  # Persona 2
+        self.basic_stmt = BasicStatementGenerator(scope=self.scope)  # Persona 2
+        self.ctrl_stmt = StatementVisitor(target="cpp")  # Persona 3
+        self.func_gen = FunctionGenerator(scope=self.scope)  # Persona 2
 
     def generate(self, module: Module) -> str:
         if not isinstance(module, Module):
@@ -34,8 +42,12 @@ class CodeGeneratorCpp:
         self.scope.reset()
 
         # 1) separar funciones del resto
-        fun_defs: List[FunctionDef] = [n for n in module.body if isinstance(n, FunctionDef)]
-        globals_: List[AstNode]     = [n for n in module.body if not isinstance(n, FunctionDef)]
+        fun_defs: List[FunctionDef] = [
+            n for n in module.body if isinstance(n, FunctionDef)
+        ]
+        globals_: List[AstNode] = [
+            n for n in module.body if not isinstance(n, FunctionDef)
+        ]
 
         parts: List[str] = [CPP_PREAMBLE]
 
@@ -62,6 +74,10 @@ class CodeGeneratorCpp:
         # control de flujo (Persona 3)
         if isinstance(stmt, (If, While, For, Block)):
             block_code = self.ctrl_stmt.visit(stmt)
-            return ["  " + line if line.strip() else line
-                    for line in block_code.splitlines()]
-        raise NotImplementedError(f"[CodeGeneratorCpp] Statement no soportado en global: {type(stmt).__name__}")
+            return [
+                "  " + line if line.strip() else line
+                for line in block_code.splitlines()
+            ]
+        raise NotImplementedError(
+            f"[CodeGeneratorCpp] Statement no soportado en global: {type(stmt).__name__}"
+        )

@@ -26,7 +26,6 @@ from src.core import (
     Attribute,
 )
 
-# Operadores binarios mapeo a C++
 _BIN_OP_CPP = {
     "+": "+",
     "-": "-",
@@ -45,7 +44,6 @@ _BIN_OP_CPP = {
 
 
 def _escape_cpp_string(s: str) -> str:
-    # Escapa comillas y backslashes para literales de C++
     return s.replace("\\", r"\\").replace('"', r"\"")
 
 
@@ -58,11 +56,11 @@ class ExprGenerator:
         m = getattr(self, f"visit_{type(node).__name__}", None)
         if not m:
             raise NotImplementedError(
-                f"ExprGenerator no soporta nodos de tipo {type(node).__name__}"
+                f"ExprGenerator does not support nodes of type {type(node).__name__}"
             )
-        return m(node) # TODO(any): m is not callable
+        return m(node)  # TODO(any): m is not callable
 
-    # ---------- Literales ----------
+    # ---------- Literals ----------
     def visit_LiteralExpr(self, node: LiteralExpr) -> str:
         v = node.value
         if isinstance(v, str):
@@ -74,49 +72,69 @@ class ExprGenerator:
         if isinstance(v, (int, float)):
             return f"DynamicType({v})"
         raise NotImplementedError(
-            f"LiteralExpr con valor de tipo {type(v).__name__} no soportado"
+            f"LiteralExpr with value of type: {type(v).__name__} is not supported"
         )
 
-    # ---------- Identificadores ----------
+    # ---------- Identifiers ----------
     def visit_Identifier(self, node: Identifier) -> str:
         name = node.name
         if self.scope is not None and hasattr(self.scope, "exists"):
             if not self.scope.exists(name):
                 raise NameError(
-                    f"Identificador '{name}' no definido en el scope actual"
+                    f"Identifier '{name}' not defined within the current scope"
                 )
         return name
 
-    # ---------- Expresiones Unarias ----------
+    # ---------- Unary Expressions  ----------
     def visit_UnaryExpr(self, node: UnaryExpr) -> str:
         rhs = self.visit(node.operand)
         if node.op == "-":
             return f"(DynamicType(0) - ({rhs}))"
         if node.op in ("not", "!"):
             return f"(!({rhs}))"
-        raise NotImplementedError(f"Operador unario '{node.op}' no soportado")
+        raise NotImplementedError(f"Unary op '{node.op}' is not supported")
 
-    # ---------- Expresiones Binarias ----------
+    # ---------- Binary expressions ----------
     def visit_BinaryExpr(self, node: BinaryExpr) -> str:
         lhs = self.visit(node.left)
         rhs = self.visit(node.right)
         op = node.op
         if op == "**":
-            return f"builtins::pow({lhs}, {rhs})"
+            return f"DynamicType(pow({lhs}.toDouble(), {rhs}.toDouble()))"
 
         mapped = _BIN_OP_CPP.get(op)
         if not mapped:
-            raise NotImplementedError(f"Operador binario '{op}' no soportado")
+            raise NotImplementedError(f"Binary Op '{op}' is not supported")
         return f"(({lhs}) {mapped} ({rhs}))"
 
-    # ---------- Llamadas a Funciones ----------
+    # ---------- Funct calls ----------
     def visit_CallExpr(self, node: CallExpr) -> str:
         if isinstance(node.callee, Identifier):
             callee = node.callee.name
         elif isinstance(node.callee, Attribute):
-            raise NotImplementedError("Llamadas a métodos no soportadas aún")
+            raise NotImplementedError("Method calls are not supported by CallExpr")
         else:
-            raise NotImplementedError("Tipo de callee no soportado en CallExpr")
+            raise NotImplementedError("callee type not supported in CallExpr")
 
         args = [self.visit(a) for a in node.args]
+        builtin_mapping = {
+            "print": "print",
+            "len": "len",
+            "range": "range",
+            "str": "str",
+            "int": "int_",
+            "float": "float_",
+            "bool": "bool_",
+            "abs": "abs",
+            "min": "min",
+            "max": "max",
+            "sum": "sum",
+            "type": "type",
+            "input": "input",
+        }
+        # if it's a builtin function
+        if callee in builtin_mapping:
+            cpp_name = builtin_mapping[callee]
+            return f"{cpp_name}({', '.join(args)})"
+        # Else, it's a user-defined function
         return f"_fn_{callee}({', '.join(args)})"

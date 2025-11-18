@@ -72,24 +72,16 @@ class CodeGenerator:
         return self.statement_visitor.visit(node)
 
     def generate_file(self, node, filename: str = "output.cpp"):
-        """
-        Generate code for the given AST node and write it to a file.
-        Args:
-                node: Root AST node to generate code for.
-                filename (str): Output filename.
-        Returns:
-                str: The filename where code was written.
-        Adds C++ STL headers if target is 'cpp'.
-        """
+        """Generate code for the given AST node and write it to a file."""
         code = self.visit(node)  # Generate code from AST
         if self.target == "cpp":
-            # Add C++ STL headers and namespace
+            # Include DynamicType system and builtins
             code = (
-                "#include <vector>\n#include <tuple>\n#include <set>\n#include <map>\n#include <iostream>\nusing namespace std;\n\n"
-                + code
+                # "builtins.hpp" includes DynamicType and that one includes other useful libraries
+                '#include "builtins.hpp"\n'
+                "using namespace std;\n\n" + code
             )
-            # TODO(Andres): Include definition of DynamicType and operator overloads in C++ (Persona 1)
         # Write generated code to file
-        with open(filename, "w") as f:
+        with open(file=filename, mode="w", encoding="utf-8") as f:
             f.write(code)
-        return filename  # Return the output filename
+        return filename

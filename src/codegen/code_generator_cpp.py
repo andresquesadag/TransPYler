@@ -19,10 +19,7 @@ from .basic_statement_generator import BasicStatementGenerator
 from .function_generator import FunctionGenerator
 from .statement_generator import StatementVisitor  # Persona 3
 
-CPP_PREAMBLE = """#include <iostream>
-#include <string>
-#include "dynamic_type.hpp"
-#include "builtins.hpp"
+CPP_PREAMBLE = """#include "builtins.hpp"
 using namespace std;
 """
 

@@ -186,12 +186,14 @@ class BenchmarkRunner:
             output=output
         )
     
-    def transpile_and_compile(self, python_file: Path) -> Path:
+    def transpile_and_compile(self, python_file: Path, input_value: int) -> Path:
         """
         Transpile a Python program to C++ and compile it.
+        Modifies the input value in the code before transpiling.
         
         Args:
-            python_file: Python file to transpile
+            python_file: Python file to transpile (should be _simple.py version)
+            input_value: The input value to hardcode in the program
             
         Returns:
             Path to the compiled executable
@@ -200,12 +202,23 @@ class BenchmarkRunner:
         with open(python_file, 'r') as f:
             source_code = f.read()
         
+        # Replace the hardcoded value with the actual input
+        # Look for patterns like "n = 10" or "size = 100" and replace
+        if "n = " in source_code:
+            # Replace "n = <number>" with "n = input_value"
+            import re
+            source_code = re.sub(r'n = \d+', f'n = {input_value}', source_code)
+        elif "size = " in source_code:
+            # Replace "size = <number>" with "size = input_value"
+            import re
+            source_code = re.sub(r'size = \d+', f'size = {input_value}', source_code)
+        
         # Transpile to C++
-        cpp_file = self.output_dir / f"{python_file.stem}_transpiled.cpp"
+        cpp_file = self.output_dir / f"{python_file.stem}_transpiled_{input_value}.cpp"
         self.transpiler.transpile(source_code, str(cpp_file))
         
         # Compile
-        exe_file = self.output_dir / f"{python_file.stem}_transpiled"
+        exe_file = self.output_dir / f"{python_file.stem}_transpiled_{input_value}"
         success = self.compile_cpp(cpp_file, exe_file, use_runtime=True)
         
         if not success:
@@ -247,37 +260,68 @@ class BenchmarkRunner:
         results = []
         
         # Files
-        python_file = self.programs_dir / f"{program_name}.py"
+        python_file = self.programs_dir / f"{program_name}.py"  # Full version for Python execution
+        python_simple_file = self.programs_dir / f"{program_name}_simple.py"  # Simplified for transpiling
         cpp_manual_file = self.programs_dir / f"{program_name}_manual.cpp"
         
         print(f"\n{'='*60}")
         print(f"Benchmarking: {program_name}")
         print(f"{'='*60}")
         
-        # Compile manual C++ version
+        # Compile manual C++ version once
         print("Compiling manual C++...")
         cpp_manual_exe = self.compile_manual_cpp(cpp_manual_file)
-        
-        # Transpile and compile Python version
-        print("Transpiling and compiling Python to C++...")
-        cpp_transpiled_exe = self.transpile_and_compile(python_file)
         
         # Run benchmarks for each input size
         for size in input_sizes:
             print(f"\nTesting with input size: {size}")
             
-            # Python
+            # 1. Python (original version with sys.argv support)
             print("  Running Python...")
             py_result = self.run_python(python_file, [size], iterations)
             py_result.language = "python"
             results.append(py_result)
             print(f"    Time: {py_result.execution_time:.6f}s")
             
-            # C++ Transpilado
-            print("  Running C++ (transpiled)...")
-            cpp_trans_result = self.run_cpp(cpp_transpiled_exe, [size], iterations)
-            cpp_trans_result.program_name = program_name
-            cpp_trans_result.language = "cpp_transpiled"
+            # 2. C++ Transpiled (compile simplified version for each input size)
+            print("  Transpiling and compiling Python to C++...")
+            try:
+                cpp_transpiled_exe = self.transpile_and_compile(python_simple_file, size)
+                print("  Running C++ (transpiled)...")
+                # Don't pass arguments - the value is hardcoded in the transpiled code
+                cpp_trans_result = self.run_cpp(cpp_transpiled_exe, [], iterations)
+                cpp_trans_result.program_name = program_name
+                cpp_trans_result.language = "cpp_transpiled"
+                cpp_trans_result.input_size = size  # Set manually since no args passed
+                results.append(cpp_trans_result)
+                print(f"    Time: {cpp_trans_result.execution_time:.6f}s")
+            except Exception as e:
+                print(f"    ERROR transpiling: {e}")
+                # Create a dummy result with error
+                cpp_trans_result = BenchmarkResult(
+                    program_name=program_name,
+                    language="cpp_transpiled",
+                    input_size=size,
+                    execution_time=float('inf'),
+                    iterations=0,
+                    output=f"ERROR: {e}"
+                )
+                results.append(cpp_trans_result)
+            
+            # 3. C++ Manual (optimized hand-written version)
+            print("  Running C++ (manual)...")
+            cpp_manual_result = self.run_cpp(cpp_manual_exe, [size], iterations)
+            cpp_manual_result.program_name = program_name
+            cpp_manual_result.language = "cpp_manual"
+            results.append(cpp_manual_result)
+            print(f"    Time: {cpp_manual_result.execution_time:.6f}s")
+            
+            # Show speedup
+            if cpp_trans_result.execution_time != float('inf'):
+                speedup_trans = py_result.execution_time / cpp_trans_result.execution_time
+                print(f"    Speedup (transpiled): {speedup_trans:.2f}x")
+            speedup_manual = py_result.execution_time / cpp_manual_result.execution_time
+            print(f"    Speedup (manual): {speedup_manual:.2f}x")
             results.append(cpp_trans_result)
             print(f"    Time: {cpp_trans_result.execution_time:.6f}s")
             

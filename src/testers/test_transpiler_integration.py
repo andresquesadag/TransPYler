@@ -124,7 +124,9 @@ for x in numbers:
             
             # Verify for loop and list generation
             self.assertIn('DynamicType(std::vector<DynamicType>{DynamicType(1), DynamicType(2), DynamicType(3)})', cpp_code)
-            self.assertIn('for (auto x : (numbers).getList())', cpp_code)
+            # The for loop now uses a temporary variable to avoid dangling references
+            self.assertIn('for (auto x :', cpp_code)
+            self.assertIn('.getList()', cpp_code)
             self.assertIn('print(x);', cpp_code)
         finally:
             os.unlink(output_file)

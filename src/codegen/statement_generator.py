@@ -157,10 +157,19 @@ class StatementVisitor:
         iterable_code = self.expr_generator.visit(node.iterable) if hasattr(self, 'expr_generator') else str(node.iterable)
         target_code = self.expr_generator.visit(node.target) if hasattr(self, 'expr_generator') else str(node.target)
         
-        # For DynamicType, we use auto and iterate over the list
+        # For DynamicType, we need to avoid dangling references when the iterable
+        # is a temporary (e.g., range(...)). We do this by creating a local copy.
+        import uuid
+        temp_var = f"__iter_{uuid.uuid4().hex[:8]}"
         elem_type = "auto"
-        code = [f"for ({elem_type} {target_code} : ({iterable_code}).getList())"]
-        code.append(self.visit(node.body))
+        code = ["{"]
+        code.append(f"  auto {temp_var} = ({iterable_code}).getList();")
+        code.append(f"  for ({elem_type} {target_code} : {temp_var})")
+        # Indent the body
+        body_code = self.visit(node.body)
+        for line in body_code.splitlines():
+            code.append(f"  {line}")
+        code.append("}")
         return "\n".join(code)
 
     def visit_Break_cpp(self, node):

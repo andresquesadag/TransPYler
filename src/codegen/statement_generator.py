@@ -11,9 +11,6 @@ Key Features:
 - Includes helpers for type deduction in C++ for for-each loops and other control flow helpers.
 """
 
-# TODO(any): All node arguments are unused. Consider removing them or implementing their usage.
-# TODO(any): All indentation in this file is failing linting checks. Fix indentation.
-
 from typing import List, Optional
 
 
@@ -25,15 +22,18 @@ class StatementVisitor:
     Persona 3 responsibility: Implements control flow translation and helpers.
     """
 
-    def __init__(self, target: str = "python"):
+    def __init__(self, expr_generator=None, scope_manager=None):
         """
-        Initializes the StatementVisitor for a specific target language.
+        Initializes the StatementVisitor for C++ code generation.
         Args:
-                target (str): 'python' or 'cpp'
+                expr_generator: Optional ExprGenerator instance for expression evaluation
+                scope_manager: Optional ScopeManager for variable tracking
         """
-        self.target = target
+        self.target = "cpp"
         self.indent_level = 0
         self.indent_str = "    "
+        self.expr_generator = expr_generator
+        self.scope_manager = scope_manager
 
     def indent(self) -> str:
         """
@@ -51,10 +51,10 @@ class StatementVisitor:
         Returns:
                 str: Generated code for the node.
         """
-        method_name = f"visit_{node.__class__.__name__}_{self.target}"
+        method_name = f"visit_{node.__class__.__name__}_cpp"
         visitor = getattr(self, method_name, None)
-        if visitor:
-                return visitor(node) # TODO(any): Visitor is not callable
+        if visitor and callable(visitor):
+                return visitor(node)
         return self.generic_visit(node)
 
     def generic_visit(self, node) -> str:
@@ -65,109 +65,12 @@ class StatementVisitor:
         Returns:
                 str: TODO comment for unsupported node type.
         """
+        # For basic statements, delegate back to calling generator
+        if node.__class__.__name__ in ['ExprStmt', 'Assign', 'Return']:
+            raise NotImplementedError(f"BasicStatementGenerator should handle {node.__class__.__name__}")
         return f"// TODO: {node.__class__.__name__}"
 
-    # --- Python ---
-    def visit_Block_python(self, node):
-        """
-        Generates Python code for a block of statements.
-        Args:
-                node (Block): AST node for a block.
-        Returns:
-                str: Python code for the block.
-        """
-        code = []
-        self.indent_level += 1
-        for stmt in node.statements:
-            code.append(self.indent() + self.visit(stmt))
-        self.indent_level -= 1
-        return "\n".join(code)
 
-    def visit_If_python(self, node):
-        """
-        Generates Python code for an if statement.
-        Args:
-                node (If): AST node for an if statement.
-        Returns:
-                str: Python code for the if statement.
-        """
-        code = []
-        code.append(f"{self.indent()}if {self.visit(node.cond)}:")
-        code.append(self.visit(node.body))
-        for cond, block in node.elifs:
-            code.append(f"{self.indent()}elif {self.visit(cond)}:")
-            code.append(self.visit(block))
-        if node.orelse:
-            code.append(f"{self.indent()}else:")
-            code.append(self.visit(node.orelse))
-        return "\n".join(code)
-
-    def visit_While_python(self, node):
-        """
-        Generates Python code for a while loop.
-        Args:
-                node (While): AST node for a while loop.
-        Returns:
-                str: Python code for the while loop.
-        """
-        code = [f"{self.indent()}while {self.visit(node.cond)}:"]
-        code.append(self.visit(node.body))
-        return "\n".join(code)
-
-    def visit_For_python(self, node):
-        """
-        Generates Python code for a for loop.
-        Args:
-                node (For): AST node for a for loop.
-        Returns:
-                str: Python code for the for loop.
-        """
-        code = [
-            f"{self.indent()}for {self.visit(node.target)} in {self.visit(node.iterable)}:"
-        ]
-        code.append(self.visit(node.body))
-        return "\n".join(code)
-
-    def visit_Break_python(self, node):
-        """
-        Generates Python code for a break statement.
-        Args:
-                node (Break): AST node for a break statement.
-        Returns:
-                str: Python code for break.
-        """
-        return "break"
-
-    def visit_Continue_python(self, node):
-        """
-        Generates Python code for a continue statement.
-        Args:
-                node (Continue): AST node for a continue statement.
-        Returns:
-                str: Python code for continue.
-        """
-        return "continue"
-
-    def visit_Pass_python(self, node):
-        """
-        Generates Python code for a pass statement.
-        Args:
-                node (Pass): AST node for a pass statement.
-        Returns:
-                str: Python code for pass.
-        """
-        return "pass"
-
-    def visit_ListExpr_python(self, node):
-        """
-        Generates Python code for a list expression.
-        Args:
-                node (ListExpr): AST node for a list.
-        Returns:
-                str: Python code for the list.
-        """
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"[{elements}]"
 
     # --- C++ ---
     def visit_Block_cpp(self, node):
@@ -182,7 +85,12 @@ class StatementVisitor:
         code.append("{")
         self.indent_level += 1
         for stmt in node.statements:
-            code.append(self.indent() + self.visit(stmt))
+            stmt_code = self.visit(stmt)
+            if stmt_code.strip():  # Only add non-empty statements
+                # Add semicolon if statement doesn't end with } or ;
+                if not stmt_code.strip().endswith((';', '}')):
+                    stmt_code += ";"
+                code.append(self.indent() + stmt_code)
         self.indent_level -= 1
         code.append(self.indent() + "}")
         return "\n".join(code)
@@ -196,14 +104,29 @@ class StatementVisitor:
                 str: C++ code for the if statement.
         """
         code = []
-        code.append(f"{self.indent()}if ({self.visit(node.cond)})")
-        code.append(self.visit(node.body))
-        for cond, block in node.elifs:
-            code.append(f"{self.indent()}else if ({self.visit(cond)})")
-            code.append(self.visit(block))
-        if node.orelse:
-            code.append(f"{self.indent()}else")
+        # Main condition - need to convert to boolean for C++
+        cond_code = self.expr_generator.visit(node.cond) if hasattr(self, 'expr_generator') else str(node.cond)
+        # If it's already a DynamicType, just call toBool(), otherwise wrap it
+        if cond_code.startswith('DynamicType('):
+            code.append(f"if ({cond_code}.toBool())")
+        else:
+            code.append(f"if (DynamicType({cond_code}).toBool())")
+        
+        # Body
+        body_code = self.visit(node.body)
+        code.append(body_code)
+        
+        # Elif clauses
+        for elif_cond, elif_body in getattr(node, 'elifs', []):
+            elif_cond_code = self.expr_generator.visit(elif_cond) if hasattr(self, 'expr_generator') else str(elif_cond)
+            code.append(f"else if (({elif_cond_code}).toBool())")
+            code.append(self.visit(elif_body))
+        
+        # Else clause
+        if hasattr(node, 'orelse') and node.orelse:
+            code.append("else")
             code.append(self.visit(node.orelse))
+        
         return "\n".join(code)
 
     def visit_While_cpp(self, node):
@@ -214,7 +137,12 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the while loop.
         """
-        code = [f"{self.indent()}while ({self.visit(node.cond)})"]
+        cond_code = self.expr_generator.visit(node.cond) if hasattr(self, 'expr_generator') else str(node.cond)
+        # If it's already a DynamicType, just call toBool(), otherwise wrap it
+        if cond_code.startswith('DynamicType('):
+            code = [f"while ({cond_code}.toBool())"]
+        else:
+            code = [f"while (DynamicType({cond_code}).toBool())"]
         code.append(self.visit(node.body))
         return "\n".join(code)
 
@@ -226,11 +154,12 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the for-each loop.
         """
-        iterable_code = self.visit(node.iterable)
-        elem_type = self._deduce_cpp_type(node.iterable)
-        code = [
-            f"{self.indent()}for ({elem_type} {self.visit(node.target)} : {iterable_code})"
-        ]
+        iterable_code = self.expr_generator.visit(node.iterable) if hasattr(self, 'expr_generator') else str(node.iterable)
+        target_code = self.expr_generator.visit(node.target) if hasattr(self, 'expr_generator') else str(node.target)
+        
+        # For DynamicType, we use auto and iterate over the list
+        elem_type = "auto"
+        code = [f"for ({elem_type} {target_code} : ({iterable_code}).getList())"]
         code.append(self.visit(node.body))
         return "\n".join(code)
 
@@ -263,6 +192,59 @@ class StatementVisitor:
                 str: C++ code for pass (comment).
         """
         return "/* pass */"
+
+    def visit_ExprStmt_cpp(self, node):
+        """
+        Generates C++ code for an expression statement.
+        Args:
+                node (ExprStmt): AST node for an expression statement.
+        Returns:
+                str: C++ code for the expression statement.
+        """
+        if hasattr(self, 'expr_generator') and self.expr_generator:
+            code = self.expr_generator.visit(node.value)
+            return f"{code};"
+        else:
+            # Fallback if no expr_generator available
+            return f"/* Expression statement: {node.value.__class__.__name__} */;"
+
+    def visit_Assign_cpp(self, node):
+        """
+        Generates C++ code for an assignment statement.
+        Args:
+                node (Assign): AST node for an assignment.
+        Returns:
+                str: C++ code for the assignment.
+        """
+        # This should be handled by BasicStatementGenerator, not here
+        # But we provide a basic implementation as fallback
+        if hasattr(node.target, 'name') and hasattr(self, 'expr_generator') and self.expr_generator:
+            name = node.target.name
+            rhs_code = self.expr_generator.visit(node.value)
+            
+            # Check if variable needs declaration
+            if self.scope_manager and not self.scope_manager.exists(name):
+                self.scope_manager.declare(name)
+                return f"DynamicType {name} = {rhs_code};"
+            else:
+                return f"{name} = {rhs_code};"
+        else:
+            return f"/* Assignment statement */;"
+
+    def visit_Return_cpp(self, node):
+        """
+        Generates C++ code for a return statement.
+        Args:
+                node (Return): AST node for a return.
+        Returns:
+                str: C++ code for the return.
+        """
+        if node.value is None:
+            return "return DynamicType();"
+        elif hasattr(self, 'expr_generator') and self.expr_generator:
+            return f"return {self.expr_generator.visit(node.value)};"
+        else:
+            return "return DynamicType();"
 
     def visit_ListExpr_cpp(self, node):
         """

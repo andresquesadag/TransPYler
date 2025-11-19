@@ -10,48 +10,36 @@ Key Features:
 """
 
 from ..parser.parser import Parser
-#from ..codegen.code_generator import CodeGenerator
-from ..codegen.code_generator_cpp import CodeGeneratorCpp
-
-# class Transpiler:
-# 	def __init__(self, target: str = "cpp"):
-# 		self.target = target
-# 		self.parser = Parser()
-# 		self.codegen = CodeGenerator(target)
-
-# 	def transpile(self, source_code: str, filename: str = "output.cpp") -> str:
-# 		"""
-# 		Transpile source code to target language.
-		
-# 		Args:
-# 			source_code: The source code to transpile
-# 			filename: Output filename
-			
-# 		Returns:
-# 			str: The output filename
-# 		"""
-# 		ast_obj = self.parser.parse(source_code)
-# 		# Pass AST object directly to codegen (no conversion to dict)
-# 		return self.codegen.generate_file(ast_obj, filename) 
+from ..codegen.code_generator import CodeGenerator
 
 class Transpiler:
     def __init__(self):
+        """
+        Initialize the Transpiler for C++ code generation.
+        """
         self.parser = Parser()
-        self.codegen = CodeGeneratorCpp()  # solo C++
+        self.codegen = CodeGenerator()
 
-    def transpile(self, source_code: str, filename: str = "output.cpp") -> str:
+    def transpile(self, source_code: str, filename: str = None) -> str:
         """
-        Transpile Fangless Python source code to C++ and write it to a file.
-
+        Transpile source code to target language and write it to a file.
+        
         Args:
-            source_code: Fangless Python source
-            filename: output C++ filename
-
+            source_code: The source code to transpile
+            filename: Output filename (auto-generated if None)
+            
         Returns:
-            str: the output filename
+            str: The output filename
         """
-        module = self.parser.parse(source_code)          # AST: Module
-        cpp_code = self.codegen.generate(module)         # string C++
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(cpp_code)
+        # Generate default filename if none provided
+        if filename is None:
+            filename = "output.cpp"
+        
+        # Parse the source code to get AST
+        module = self.parser.parse(source_code)
+        
+        # Generate code using the unified CodeGenerator
+        # The generate_file method now handles both Module nodes and individual nodes properly
+        self.codegen.generate_file(module, filename)
+        
         return filename

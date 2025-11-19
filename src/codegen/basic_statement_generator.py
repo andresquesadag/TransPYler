@@ -63,11 +63,11 @@ class BasicStatementGenerator:
             NotImplementedError: If the node type is not supported.
         """
         method = getattr(self, f"visit_{type(node).__name__}", None)
-        if not method:
+        if not method or not callable(method):
             raise NotImplementedError(
                 f"BasicStatementGenerator does not support node type {type(node).__name__}"
             )
-        return method(node) # TODO(any): Fix this. "method()" is not callable
+        return method(node)
 
     # ---------- Assignment Statements ----------
     def visit_Assign(self, node: Assign) -> str:

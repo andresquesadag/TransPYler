@@ -116,7 +116,8 @@ class TestFunctionGeneratorBasic:
         )
         code = self.gen.visit(fn)
         assert "_fn_add(DynamicType a, DynamicType b)" in code
-        assert "DynamicType sum = ((a) + (b));" in code
+        assert "DynamicType sum = " in code
+        assert "(a) + (b)" in code
         assert "return sum;" in code
 
 

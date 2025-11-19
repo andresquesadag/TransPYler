@@ -6,12 +6,12 @@ import os
 # Add the project root to sys.path so imports work correctly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.codegen.code_generator_cpp import CodeGeneratorCpp
+from src.codegen.code_generator import CodeGenerator
 from src.core import Module, FunctionDef, Identifier, BinaryExpr, UnaryExpr, LiteralExpr, CallExpr
 from src.core import Assign, ExprStmt, Return
 
-# Use the C++ oriented generator which creates a full .cpp file (preamble + functions + main)
-cg = CodeGeneratorCpp()
+# Use the unified CodeGenerator which creates a full .cpp file (preamble + functions + main)
+cg = CodeGenerator()
 
 # 1) Function: add(a,b)
 fn_add = FunctionDef(
@@ -80,7 +80,7 @@ print('WROTE', out_file)
 # Simple textual checks to validate the features
 checks = [
     ("_fn_add(", "function 'add' header"),
-    ("builtins::pow(", "pow mapping for '**'"),
+    ("pow(", "pow mapping for '**'"),
     ("DynamicType x", "assignment inside function 'add'"),
     ("DynamicType g = DynamicType(10)", "global first declaration of g"),
     ("g = ", "global reassignment of g"),

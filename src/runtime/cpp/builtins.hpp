@@ -4,12 +4,23 @@
 #define BUILTINS_HPP
 
 #include "DynamicType.hpp"
+#include <iostream>
 
 // Python built-in functions
 
 // print() - Output to console
 template<typename... Args> // Folding template to accept multiple arguments
-void print(const Args&... args);
+void print(const Args&... args) {
+    if constexpr (sizeof...(args) == 0) { // No arguments
+        std::cout << std::endl;
+    } else {
+        bool first = true;
+        /*This prints all the arguments, if the argument isn't the first one,
+        then it should leave a space before the argument*/
+        ((std::cout << (first ? (first = false, "") : " ") << args.toString()), ...);
+        std::cout << std::endl;
+    }
+}
 
 // len() - Get length of sequence
 DynamicType len(const DynamicType& value);
@@ -18,6 +29,9 @@ DynamicType len(const DynamicType& value);
 DynamicType range(int stop);
 DynamicType range(int start, int stop);
 DynamicType range(int start, int stop, int step);
+DynamicType range(const DynamicType& stop);
+DynamicType range(const DynamicType& start, const DynamicType& stop);
+DynamicType range(const DynamicType& start, const DynamicType& stop, const DynamicType& step);
 
 // Type conversion functions
 DynamicType str(const DynamicType& value);

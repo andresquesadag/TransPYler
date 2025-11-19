@@ -102,6 +102,7 @@ class DynamicType{
     // List/Dict operations
     DynamicType &operator[](const size_t index);
     DynamicType &operator[](const std::string &key);
+    DynamicType &operator[](const DynamicType &key);
 
     // Output stream
     friend std::ostream &operator<<(std::ostream &os, const DynamicType &dt) {
@@ -110,8 +111,12 @@ class DynamicType{
     }
 
     // Collection getters
-    std::vector<DynamicType>& getList();
-    std::map<std::string, DynamicType>& getDict();
+  // Non-const accessors (mutation allowed)
+  std::vector<DynamicType>& getList();
+  std::map<std::string, DynamicType>& getDict();
+  // Const accessors (read-only)
+  const std::vector<DynamicType>& getList() const;
+  const std::map<std::string, DynamicType>& getDict() const;
 };
 
 #endif // DYNAMIC_TYPE_HPP

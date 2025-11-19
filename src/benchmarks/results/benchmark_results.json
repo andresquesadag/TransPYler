@@ -1,0 +1,1082 @@
+[
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 1,
+    "execution_time": 0.05004580815633138,
+    "iterations": 3,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 1,
+    "execution_time": 0.005420525868733724,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 1,
+    "execution_time": 0.005062580108642578,
+    "iterations": 3,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 2,
+    "execution_time": 0.04265618324279785,
+    "iterations": 3,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 2,
+    "execution_time": 0.0038449764251708984,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 2,
+    "execution_time": 0.0031026204427083335,
+    "iterations": 3,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 3,
+    "execution_time": 0.04374551773071289,
+    "iterations": 3,
+    "output": "2"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 3,
+    "execution_time": 0.0038286050160725913,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 3,
+    "execution_time": 0.004957993825276692,
+    "iterations": 3,
+    "output": "2"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 4,
+    "execution_time": 0.03910040855407715,
+    "iterations": 3,
+    "output": "3"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 4,
+    "execution_time": 0.00297395388285319,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 4,
+    "execution_time": 0.005213340123494466,
+    "iterations": 3,
+    "output": "3"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 5,
+    "execution_time": 0.03537193934122721,
+    "iterations": 3,
+    "output": "5"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 5,
+    "execution_time": 0.003738959630330404,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 5,
+    "execution_time": 0.005113124847412109,
+    "iterations": 3,
+    "output": "5"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 6,
+    "execution_time": 0.03787891070048014,
+    "iterations": 3,
+    "output": "8"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 6,
+    "execution_time": 0.0035942395528157554,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 6,
+    "execution_time": 0.00289765993754069,
+    "iterations": 3,
+    "output": "8"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 7,
+    "execution_time": 0.03654289245605469,
+    "iterations": 3,
+    "output": "13"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 7,
+    "execution_time": 0.004463513692220052,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 7,
+    "execution_time": 0.003846883773803711,
+    "iterations": 3,
+    "output": "13"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 8,
+    "execution_time": 0.04221304257710775,
+    "iterations": 3,
+    "output": "21"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 8,
+    "execution_time": 0.004293044408162435,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 8,
+    "execution_time": 0.0039475758870442705,
+    "iterations": 3,
+    "output": "21"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 9,
+    "execution_time": 0.041315317153930664,
+    "iterations": 3,
+    "output": "34"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 9,
+    "execution_time": 0.003442049026489258,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 9,
+    "execution_time": 0.002909501393636068,
+    "iterations": 3,
+    "output": "34"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 10,
+    "execution_time": 0.03722222646077474,
+    "iterations": 3,
+    "output": "55"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 10,
+    "execution_time": 0.002846399943033854,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 10,
+    "execution_time": 0.00392603874206543,
+    "iterations": 3,
+    "output": "55"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 15,
+    "execution_time": 0.0381933848063151,
+    "iterations": 3,
+    "output": "610"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 15,
+    "execution_time": 0.003489335378011068,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 15,
+    "execution_time": 0.00510096549987793,
+    "iterations": 3,
+    "output": "610"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 20,
+    "execution_time": 0.042677879333496094,
+    "iterations": 3,
+    "output": "6765"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 20,
+    "execution_time": 0.004781246185302734,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 20,
+    "execution_time": 0.005051612854003906,
+    "iterations": 3,
+    "output": "6765"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 25,
+    "execution_time": 0.07105239232381184,
+    "iterations": 3,
+    "output": "75025"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 25,
+    "execution_time": 0.0029861927032470703,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 25,
+    "execution_time": 0.005459944407145183,
+    "iterations": 3,
+    "output": "75025"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 30,
+    "execution_time": 0.41942715644836426,
+    "iterations": 3,
+    "output": "832040"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 30,
+    "execution_time": 0.006199042002360026,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 30,
+    "execution_time": 0.009219010670979818,
+    "iterations": 3,
+    "output": "832040"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 35,
+    "execution_time": 4.1532096068064375,
+    "iterations": 3,
+    "output": "9227465"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 35,
+    "execution_time": 0.004243930180867513,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 35,
+    "execution_time": 0.04776700337727865,
+    "iterations": 3,
+    "output": "9227465"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "python",
+    "input_size": 40,
+    "execution_time": 41.92175189654032,
+    "iterations": 3,
+    "output": "102334155"
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_transpiled",
+    "input_size": 40,
+    "execution_time": 0.003557999928792318,
+    "iterations": 3,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_recursivo",
+    "language": "cpp_manual",
+    "input_size": 40,
+    "execution_time": 0.7805121739705404,
+    "iterations": 3,
+    "output": "102334155"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 1,
+    "execution_time": 0.05198655128479004,
+    "iterations": 5,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 1,
+    "execution_time": 0.006964302062988282,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 1,
+    "execution_time": 0.013007545471191406,
+    "iterations": 5,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 2,
+    "execution_time": 0.05236916542053223,
+    "iterations": 5,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 2,
+    "execution_time": 0.0035542011260986327,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 2,
+    "execution_time": 0.0034225940704345702,
+    "iterations": 5,
+    "output": "1"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 3,
+    "execution_time": 0.04733510017395019,
+    "iterations": 5,
+    "output": "2"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 3,
+    "execution_time": 0.0050086498260498045,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 3,
+    "execution_time": 0.008581113815307618,
+    "iterations": 5,
+    "output": "2"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 4,
+    "execution_time": 0.043978309631347655,
+    "iterations": 5,
+    "output": "3"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 4,
+    "execution_time": 0.0030725955963134765,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 4,
+    "execution_time": 0.0035083770751953127,
+    "iterations": 5,
+    "output": "3"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 5,
+    "execution_time": 0.03452911376953125,
+    "iterations": 5,
+    "output": "5"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 5,
+    "execution_time": 0.0026386260986328127,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 5,
+    "execution_time": 0.002955007553100586,
+    "iterations": 5,
+    "output": "5"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 6,
+    "execution_time": 0.032828235626220705,
+    "iterations": 5,
+    "output": "8"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 6,
+    "execution_time": 0.0027800559997558593,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 6,
+    "execution_time": 0.002349233627319336,
+    "iterations": 5,
+    "output": "8"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 7,
+    "execution_time": 0.036553812026977536,
+    "iterations": 5,
+    "output": "13"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 7,
+    "execution_time": 0.003035736083984375,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 7,
+    "execution_time": 0.0045890331268310545,
+    "iterations": 5,
+    "output": "13"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 8,
+    "execution_time": 0.03351316452026367,
+    "iterations": 5,
+    "output": "21"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 8,
+    "execution_time": 0.004498338699340821,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 8,
+    "execution_time": 0.004881095886230469,
+    "iterations": 5,
+    "output": "21"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 9,
+    "execution_time": 0.04357590675354004,
+    "iterations": 5,
+    "output": "34"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 9,
+    "execution_time": 0.00495758056640625,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 9,
+    "execution_time": 0.004750490188598633,
+    "iterations": 5,
+    "output": "34"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 10,
+    "execution_time": 0.03419404029846192,
+    "iterations": 5,
+    "output": "55"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 10,
+    "execution_time": 0.004326438903808594,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 10,
+    "execution_time": 0.004040670394897461,
+    "iterations": 5,
+    "output": "55"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 15,
+    "execution_time": 0.03746852874755859,
+    "iterations": 5,
+    "output": "610"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 15,
+    "execution_time": 0.002961397171020508,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 15,
+    "execution_time": 0.002778148651123047,
+    "iterations": 5,
+    "output": "610"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 20,
+    "execution_time": 0.03297567367553711,
+    "iterations": 5,
+    "output": "6765"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 20,
+    "execution_time": 0.002958822250366211,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 20,
+    "execution_time": 0.003040027618408203,
+    "iterations": 5,
+    "output": "6765"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 25,
+    "execution_time": 0.03916187286376953,
+    "iterations": 5,
+    "output": "75025"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 25,
+    "execution_time": 0.005680894851684571,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 25,
+    "execution_time": 0.0052357673645019535,
+    "iterations": 5,
+    "output": "75025"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 30,
+    "execution_time": 0.04198474884033203,
+    "iterations": 5,
+    "output": "832040"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 30,
+    "execution_time": 0.0036922454833984374,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 30,
+    "execution_time": 0.005994176864624024,
+    "iterations": 5,
+    "output": "832040"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 35,
+    "execution_time": 0.042420816421508786,
+    "iterations": 5,
+    "output": "9227465"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 35,
+    "execution_time": 0.004420185089111328,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 35,
+    "execution_time": 0.003402853012084961,
+    "iterations": 5,
+    "output": "9227465"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 40,
+    "execution_time": 0.03958802223205567,
+    "iterations": 5,
+    "output": "102334155"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 40,
+    "execution_time": 0.0030977725982666016,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 40,
+    "execution_time": 0.004129600524902344,
+    "iterations": 5,
+    "output": "102334155"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 45,
+    "execution_time": 0.04319543838500976,
+    "iterations": 5,
+    "output": "1134903170"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 45,
+    "execution_time": 0.004050636291503906,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 45,
+    "execution_time": 0.005993509292602539,
+    "iterations": 5,
+    "output": "1134903170"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "python",
+    "input_size": 50,
+    "execution_time": 0.03705253601074219,
+    "iterations": 5,
+    "output": "12586269025"
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_transpiled",
+    "input_size": 50,
+    "execution_time": 0.002979469299316406,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "fibonacci_iterativo",
+    "language": "cpp_manual",
+    "input_size": 50,
+    "execution_time": 0.003544044494628906,
+    "iterations": 5,
+    "output": "12586269025"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 100,
+    "execution_time": 0.0640350341796875,
+    "iterations": 5,
+    "output": "Sorted 100 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 100,
+    "execution_time": 0.0022095203399658202,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 100,
+    "execution_time": 0.0026027679443359373,
+    "iterations": 5,
+    "output": "Sorted 100 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 250,
+    "execution_time": 0.036346721649169925,
+    "iterations": 5,
+    "output": "Sorted 250 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 250,
+    "execution_time": 0.0025252342224121095,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 250,
+    "execution_time": 0.0026596546173095702,
+    "iterations": 5,
+    "output": "Sorted 250 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 500,
+    "execution_time": 0.07159252166748047,
+    "iterations": 5,
+    "output": "Sorted 500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 500,
+    "execution_time": 0.002429294586181641,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 500,
+    "execution_time": 0.0036984920501708985,
+    "iterations": 5,
+    "output": "Sorted 500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 750,
+    "execution_time": 0.1335878849029541,
+    "iterations": 5,
+    "output": "Sorted 750 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 750,
+    "execution_time": 0.006464624404907226,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 750,
+    "execution_time": 0.015888261795043945,
+    "iterations": 5,
+    "output": "Sorted 750 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 1000,
+    "execution_time": 0.2747279167175293,
+    "iterations": 5,
+    "output": "Sorted 1000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 1000,
+    "execution_time": 0.002191781997680664,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 1000,
+    "execution_time": 0.006281423568725586,
+    "iterations": 5,
+    "output": "Sorted 1000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 1500,
+    "execution_time": 0.41240577697753905,
+    "iterations": 5,
+    "output": "Sorted 1500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 1500,
+    "execution_time": 0.00176544189453125,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 1500,
+    "execution_time": 0.008361291885375977,
+    "iterations": 5,
+    "output": "Sorted 1500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 2000,
+    "execution_time": 0.6523622512817383,
+    "iterations": 5,
+    "output": "Sorted 2000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 2000,
+    "execution_time": 0.0015720844268798829,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 2000,
+    "execution_time": 0.012256431579589843,
+    "iterations": 5,
+    "output": "Sorted 2000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 2500,
+    "execution_time": 0.9554876327514649,
+    "iterations": 5,
+    "output": "Sorted 2500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 2500,
+    "execution_time": 0.0019196510314941407,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 2500,
+    "execution_time": 0.017510080337524415,
+    "iterations": 5,
+    "output": "Sorted 2500 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 3000,
+    "execution_time": 1.4976383209228517,
+    "iterations": 5,
+    "output": "Sorted 3000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 3000,
+    "execution_time": 0.0020598411560058595,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 3000,
+    "execution_time": 0.03228635787963867,
+    "iterations": 5,
+    "output": "Sorted 3000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 4000,
+    "execution_time": 2.5802632331848145,
+    "iterations": 5,
+    "output": "Sorted 4000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 4000,
+    "execution_time": 0.0019298076629638671,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 4000,
+    "execution_time": 0.04432210922241211,
+    "iterations": 5,
+    "output": "Sorted 4000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "python",
+    "input_size": 5000,
+    "execution_time": 3.513925313949585,
+    "iterations": 5,
+    "output": "Sorted 5000 elements"
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_transpiled",
+    "input_size": 5000,
+    "execution_time": 0.0017618656158447266,
+    "iterations": 5,
+    "output": ""
+  },
+  {
+    "program_name": "bubble_sort",
+    "language": "cpp_manual",
+    "input_size": 5000,
+    "execution_time": 0.06594772338867187,
+    "iterations": 5,
+    "output": "Sorted 5000 elements"
+  }
+]

@@ -34,6 +34,7 @@ class StatementVisitor:
         self.indent_str = "    "
         self.expr_generator = expr_generator
         self.scope_manager = scope_manager
+        self._iter_counter = 0  # Counter for generating readable iterator variable names
 
     def indent(self) -> str:
         """
@@ -159,8 +160,9 @@ class StatementVisitor:
         
         # For DynamicType, we need to avoid dangling references when the iterable
         # is a temporary (e.g., range(...)). We do this by creating a local copy.
-        import uuid
-        temp_var = f"__iter_{uuid.uuid4().hex[:8]}"
+        # Use a readable counter-based name instead of UUID
+        self._iter_counter += 1
+        temp_var = f"__iter_temp_{self._iter_counter}"
         elem_type = "auto"
         code = ["{"]
         code.append(f"  auto {temp_var} = ({iterable_code}).getList();")

@@ -77,28 +77,28 @@ class ScopeManager:
         """
         return list(self.scopes)
 
-    # -------- implementado por persona 2 --------
+    # -------- implemented by person 2 --------
     def push(self):
-        """Alias de enter_scope()."""
+        """Alias for enter_scope()."""
         self.enter_scope()
 
     def pop(self):
-        """Alias de exit_scope(); no revienta si estás en global."""
+        """Alias for exit_scope(); doesn't crash if in global scope."""
         if len(self.scopes) > 1:
             self.scopes.pop()
         else:
-            # Fail-soft: no lanzamos para no romper pipelines
+            # Fail-soft: don't throw to avoid breaking pipelines
             pass
 
     def reset(self):
-        """Reinicia a un único scope global."""
+        """Reset to a single global scope."""
         self.scopes.clear()
         self.enter_scope()
 
     def declare(self, name):
-        """Declara un nombre en el scope actual."""
+        """Declare a name in the current scope."""
         self.add_symbol(name, True)
 
     def exists(self, name) -> bool:
-        """¿El nombre existe en algún scope visible?"""
+        """Does the name exist in any visible scope?"""
         return self.resolve_symbol(name) is not None

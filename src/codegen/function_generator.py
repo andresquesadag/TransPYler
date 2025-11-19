@@ -32,13 +32,14 @@ from .statement_generator import StatementVisitor
 class FunctionGenerator:
     def __init__(self, scope: ScopeManager):
         """
-        Initializes the FunctionGenerator for a specific target language.
+        Initializes the FunctionGenerator for C++ code generation.
         Args:
                 scope (ScopeManager): Scope manager for tracking variable declarations.
         """
         self.scope = scope
+        self.expr_gen = ExprGenerator(scope=self.scope)
         self.basic_stmt = BasicStatementGenerator(self.scope)
-        self.ctrl_stmt = StatementVisitor(target="cpp")
+        self.ctrl_stmt = StatementVisitor(expr_generator=self.expr_gen, scope_manager=self.scope)
 
     def visit(self, node: FunctionDef) -> str:
         if not isinstance(node, FunctionDef):
@@ -62,9 +63,17 @@ class FunctionGenerator:
                     self.scope.declare(n)
             #  ------- Function Body -------
             body_lines: List[str] = []
-            for stmt in node.body:
+            # node.body can be either a list of statements or a Block node
+            if isinstance(node.body, list):
+                statements = node.body
+            elif hasattr(node.body, 'statements'):
+                statements = node.body.statements
+            else:
+                statements = [node.body]
+            
+            for stmt in statements:
                 body_lines.append(self._emit_stmt(stmt))
-            has_top_return = any(isinstance(s, Return) for s in node.body)
+            has_top_return = any(isinstance(s, Return) for s in statements)
             lines = [header]
             for line in body_lines:
                 if line is None:
@@ -79,10 +88,19 @@ class FunctionGenerator:
             self.scope.pop()
 
     def _emit_stmt(self, stmt: AstNode) -> str:
+        # Basic statements (assignments, expressions, returns)
         if isinstance(stmt, (Assign, ExprStmt, Return)):
             return self.basic_stmt.visit(stmt)
+        # Control flow statements (if, while, for, blocks)
         if isinstance(stmt, (If, While, For, Block)):
             return self.ctrl_stmt.visit(stmt)
-        raise NotImplementedError(
-            f"[FunctionGenerator] Statement type {type(stmt).__name__} not supported"
-        )
+        # If it's an unknown statement type, try basic_stmt first, then ctrl_stmt
+        try:
+            return self.basic_stmt.visit(stmt)
+        except (NotImplementedError, AttributeError):
+            try:
+                return self.ctrl_stmt.visit(stmt)
+            except (NotImplementedError, AttributeError):
+                raise NotImplementedError(
+                    f"[FunctionGenerator] Statement type {type(stmt).__name__} not supported"
+                )

@@ -28,13 +28,14 @@ class DataStructureGenerator:
     Handles both Python and C++ targets, including type deduction for C++ STL containers.
     """
 
-    def __init__(self, target: str = "python"):
+    def __init__(self, expr_generator=None):
         """
-        Initialize the DataStructureGenerator.
+        Initialize the DataStructureGenerator for C++ code generation.
         Args:
-                        target (str): Target language ('python' or 'cpp').
+                        expr_generator: Optional ExprGenerator for evaluating element expressions
         """
-        self.target = target
+        self.target = "cpp"
+        self.expr_generator = expr_generator
 
     def visit(self, node) -> str:
         """
@@ -44,9 +45,9 @@ class DataStructureGenerator:
         Returns:
                 str: Generated code for the node.
         """
-        method_name = f"visit_{node.__class__.__name__}_{self.target}"
+        method_name = f"visit_{node.__class__.__name__}_cpp"
         visitor = getattr(self, method_name, None)
-        if visitor:
+        if visitor and callable(visitor):
             return visitor(node)
         return self.generic_visit(node)
 
@@ -56,67 +57,36 @@ class DataStructureGenerator:
         Args:
                         node: AST node.
         Returns:
-                        str: TODO comment for unsupported node type.
+                        str: Error comment for unsupported node type.
         """
-        return f"// TODO: {type(node).__name__}"
+        return f"/* Unsupported data structure: {type(node).__name__} */"
 
-    # --- Python ---
-    def visit_ListExpr_python(self, node) -> str:
-        """
-        Generate Python code for a list expression.
-        Args:
-                node (ListExpr): AST node for a list.
-        Returns:
-                str: Python list code.
-        """
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"[{elements}]"
 
-    def visit_TupleExpr_python(self, node) -> str:
-        """
-        Generate Python code for a tuple expression.
-        Args:
-                node (TupleExpr): AST node for a tuple.
-        Returns:
-                str: Python tuple code.
-        """
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"({elements})"
-
-    def visit_SetExpr_python(self, node) -> str:
-        """
-        Generate Python code for a set expression.
-        Args:
-                node (SetExpr): AST node for a set.
-        Returns:
-                str: Python set code.
-        """
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"{{{elements}}}"
-
-    def visit_DictExpr_python(self, node) -> str:
-        """
-        Generate Python code for a dictionary expression.
-        Args:
-                node (DictExpr): AST node for a dictionary.
-        Returns:
-                str: Python dict code.
-        """
-        pairs = ", ".join(f"{self.visit(k)}: {self.visit(v)}" for k, v in node.pairs)
-        return f"{{{pairs}}}"
 
     # --- C++ ---
     def visit_ListExpr_cpp(self, node) -> str:
         """
-        Generate C++ code for a list expression (std::vector).
+        Generate C++ code for a list expression using DynamicType vector.
         Args:
                 node (ListExpr): AST node for a list.
         Returns:
-                str: C++ vector code.
+                str: C++ DynamicType vector code.
         """
-        elem_type = self._deduce_cpp_vector_type(node)
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"std::vector<{elem_type}>{{{elements}}}"
+        elements = []
+        for e in node.elements:
+            if self.expr_generator:
+                elements.append(self.expr_generator.visit(e))
+            else:
+                elements.append(self.visit(e))
+        
+        if len(elements) <= 3:
+            # Short lists on one line
+            elements_str = ', '.join(elements)
+            return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
+        else:
+            # Long lists with line breaks for readability  
+            elements_str = ',\n    '.join(elements)
+            return f"DynamicType(std::vector<DynamicType>{{\n    {elements_str}\n}})"
 
     def _deduce_cpp_vector_type(self, node):
         """
@@ -141,15 +111,23 @@ class DataStructureGenerator:
 
     def visit_TupleExpr_cpp(self, node) -> str:
         """
-        Generate C++ code for a tuple expression (std::tuple).
+        Generate C++ code for a tuple expression using DynamicType.
+        For now, represent tuples as vectors since DynamicType doesn't have native tuple support.
         Args:
                 node (TupleExpr): AST node for a tuple.
         Returns:
-                str: C++ tuple code.
+                str: C++ DynamicType code representing a tuple.
         """
-        types = self._deduce_cpp_tuple_types(node)
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"std::tuple<{types}>({elements})"
+        elements = []
+        for e in node.elements:
+            if self.expr_generator:
+                elements.append(self.expr_generator.visit(e))
+            else:
+                elements.append(self.visit(e))
+        
+        # For now, represent tuples as immutable lists
+        elements_str = ', '.join(elements)
+        return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
 
     def _deduce_cpp_tuple_types(self, node):
         """
@@ -176,15 +154,23 @@ class DataStructureGenerator:
 
     def visit_SetExpr_cpp(self, node) -> str:
         """
-        Generate C++ code for a set expression (std::set).
+        Generate C++ code for a set expression using DynamicType.
+        For now, represent sets as vectors since DynamicType doesn't have native set support.
         Args:
                 node (SetExpr): AST node for a set.
         Returns:
-                str: C++ set code.
+                str: C++ DynamicType code representing a set.
         """
-        elem_type = self._deduce_cpp_set_type(node)
-        elements = ", ".join(self.visit(e) for e in node.elements)
-        return f"std::set<{elem_type}>{{{elements}}}"
+        elements = []
+        for e in node.elements:
+            if self.expr_generator:
+                elements.append(self.expr_generator.visit(e))
+            else:
+                elements.append(self.visit(e))
+        
+        # For now, represent sets as vectors (would need unique elements logic)
+        elements_str = ', '.join(elements)
+        return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
 
     def _deduce_cpp_set_type(self, node):
         """
@@ -209,17 +195,27 @@ class DataStructureGenerator:
 
     def visit_DictExpr_cpp(self, node) -> str:
         """
-        Generate C++ code for a dictionary expression (std::map).
+        Generate C++ code for a dictionary expression using DynamicType.
         Args:
                 node (DictExpr): AST node for a dictionary.
         Returns:
-                str: C++ map code.
+                str: C++ DynamicType map code.
         """
-        k_type, v_type = self._deduce_cpp_dict_types(node)
-        pairs = ", ".join(
-            f"{{{self.visit(k)}, {self.visit(v)}}}" for k, v in node.pairs
-        )
-        return f"std::map<{k_type}, {v_type}>{{{pairs}}}"
+        pairs = []
+        for k, v in node.pairs:
+            key_code = self.expr_generator.visit(k) if self.expr_generator else self.visit(k)
+            val_code = self.expr_generator.visit(v) if self.expr_generator else self.visit(v)
+            # Keys need to be converted to string for map
+            pairs.append(f"{{({key_code}).toString(), {val_code}}}")
+        
+        if len(pairs) <= 2:
+            # Short dictionaries on one line
+            pairs_str = ', '.join(pairs)
+            return f"DynamicType(std::map<std::string, DynamicType>{{{pairs_str}}})"
+        else:
+            # Long dictionaries with line breaks
+            pairs_str = ',\n'.join(pairs)
+            return f"DynamicType(std::map<std::string, DynamicType>{{\n{pairs_str}}})"
 
     def _deduce_cpp_dict_types(self, node):
         """

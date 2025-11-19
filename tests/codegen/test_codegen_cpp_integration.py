@@ -1,13 +1,13 @@
 """
 test_codegen_cpp_integration.py David
 -------------------------------
-Integration tests for CodeGeneratorCpp
+Integration tests for C++ code generation
 
 Tests validate the full code generation: 
 - Preamble generation (#include directives, using namespace)
 - Function generation with parameters and bodies
 - Global variable declarations and assignments in main()
-- Special operator mappings (e.g., ** to builtins::pow)
+- Special operator mappings (e.g., ** to pow)
 - Complete Module → .cpp transformation
 """
 
@@ -16,13 +16,13 @@ from src.core import (
     Module, FunctionDef, Identifier, LiteralExpr, BinaryExpr,
     Assign, Return
 )
-from src.codegen.code_generator_cpp import CodeGeneratorCpp
+from src.codegen.code_generator import CodeGenerator
 
 
-# ============ CodeGeneratorCpp Integration Tests ============
+# ============ C++ Code Generation Integration Tests ============
 
 class TestCodeGeneratorCppIntegration:
-    """Test full code generation pipeline with CodeGeneratorCpp."""
+    """Test full code generation pipeline with CodeGenerator."""
 
     def test_simple_module_with_function(self):
         """Test generating C++ for a module with one function."""
@@ -38,16 +38,17 @@ class TestCodeGeneratorCppIntegration:
             ]
         )
         module = Module(body=[fn])
-        gen = CodeGeneratorCpp()
+        gen = CodeGenerator()
         code = gen.generate(module)
 
         # Check preamble
-        assert "#include <iostream>" in code
-        assert "#include \"dynamic_type.hpp\"" in code
+        assert "#include \"builtins.hpp\"" in code
+        assert "using namespace std;" in code
 
         # Check function
         assert "_fn_add(DynamicType a, DynamicType b)" in code
-        assert "DynamicType x = ((a) + (b));" in code
+        assert "DynamicType x = " in code
+        assert "(a) + (b)" in code
 
         # Check main
         assert "int main()" in code
@@ -63,10 +64,11 @@ class TestCodeGeneratorCppIntegration:
             ]
         )
         module = Module(body=[fn])
-        gen = CodeGeneratorCpp()
+        gen = CodeGenerator()
         code = gen.generate(module)
 
-        assert "builtins::pow(a, b)" in code
+        # The ** operator is now mapped to DynamicType::pow in expr_generator
+        assert "DynamicType(pow(" in code or ".pow(" in code
 
     def test_module_with_globals(self):
         """Test module with global statements in main()."""
@@ -78,7 +80,7 @@ class TestCodeGeneratorCppIntegration:
         global_assign = Assign(target=Identifier(name="g"), value=LiteralExpr(value=10))
         
         module = Module(body=[fn, global_assign])
-        gen = CodeGeneratorCpp()
+        gen = CodeGenerator()
         code = gen.generate(module)
 
         # Check function

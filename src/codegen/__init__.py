@@ -8,12 +8,30 @@ Key Features:
 - Provides a test entry point for code generation modules.
 """
 
-# TODO(any): Import codegen modules here
+# Import codegen modules
+from .code_generator import CodeGenerator
+from .expr_generator import ExprGenerator
+from .statement_generator import StatementVisitor
+from .function_generator import FunctionGenerator
+from .basic_statement_generator import BasicStatementGenerator
+from .data_structure_generator import DataStructureGenerator
+from .scope_manager import ScopeManager
+
+__all__ = [
+    "CodeGenerator",
+    "ExprGenerator", 
+    "StatementVisitor",
+    "FunctionGenerator",
+    "BasicStatementGenerator",
+    "DataStructureGenerator",
+    "ScopeManager"
+]
 
 # Helpers for automated tests
 def test_codegen():
     """
-    TODO: Implement unit tests for code generators.
-    Example: test generation of if, for, lists, functions, expressions, DynamicType.
+    Unit tests for code generators are implemented in the tests/ directory.
+    Example tests include: if statements, for loops, lists, functions, expressions, DynamicType.
     """
-    pass
+    print("Code generation tests are located in tests/codegen/")
+    return True

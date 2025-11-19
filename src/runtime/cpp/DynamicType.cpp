@@ -282,6 +282,17 @@ DynamicType &DynamicType::operator[](const std::string &key) {
   }
 }
 
+DynamicType &DynamicType::operator[](const DynamicType &key) {
+  // If the key is numeric, treat as list index
+  if (key.type == Type::INT) {
+    return (*this)[static_cast<size_t>(key.toInt())];
+  }
+  // If the key is string or can be converted to string, treat as dict key
+  else {
+    return (*this)[key.toString()];
+  }
+}
+
 
 std::vector<DynamicType>& DynamicType::getList() {
   if(type != Type::LIST){
@@ -294,6 +305,17 @@ std::vector<DynamicType>& DynamicType::getList() {
   }
 }
 
+const std::vector<DynamicType>& DynamicType::getList() const {
+  if(type != Type::LIST){
+    throw std::runtime_error("Type is not a list");
+  }
+  try{
+    return std::any_cast<const std::vector<DynamicType>&>(value);
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (getList const)");
+  }
+}
+
 std::map<std::string, DynamicType>& DynamicType::getDict() {
   if(type != Type::DICT){
     throw std::runtime_error("Type is not a dict");
@@ -302,5 +324,16 @@ std::map<std::string, DynamicType>& DynamicType::getDict() {
     return std::any_cast<std::map<std::string, DynamicType>&>(value);
   } catch (const std::bad_any_cast&) {
     throw std::runtime_error("Stored value is not an enum Type (getDict)");
+  }
+}
+
+const std::map<std::string, DynamicType>& DynamicType::getDict() const {
+  if(type != Type::DICT){
+    throw std::runtime_error("Type is not a dict");
+  }
+  try{
+    return std::any_cast<const std::map<std::string, DynamicType>&>(value);
+  } catch (const std::bad_any_cast&) {
+    throw std::runtime_error("Stored value is not an enum Type (getDict const)");
   }
 }

@@ -3,31 +3,22 @@
 #include <algorithm>
 
 
-template<typename... Args>
-void print(const Args&... args) {
-    if constexpr (sizeof...(args) == 0) { // No arguments
-        std::cout << std::endl;
-    } else {
-        bool first = true;
-        /*This prints all the arguments, if the argument isn't the first one,
-        then it should leave a space before the argument*/
-        ((std::cout << (first ? (first = false, "") : " ") << args.toString()), ...);
-        std::cout << std::endl;
+// print() template implementation moved to builtins.hpp
+
+DynamicType len(const DynamicType &obj) {
+    if (obj.isList()) {
+        return DynamicType(static_cast<int>(obj.getList().size()));
     }
+    if (obj.isDict()) {
+        return DynamicType(static_cast<int>(obj.getDict().size()));
+    }
+    if (obj.isString()) {
+        return DynamicType(static_cast<int>(obj.toString().length()));
+    }
+    throw std::runtime_error("len() not supported for this type");
 }
 
-inline DynamicType len(const DynamicType &obj) {
-  if (obj.isList()) {
-    const std::vector<DynamicType> &list = std::any_cast<const std::vector<DynamicType> &>(obj);
-    return DynamicType(static_cast<int>(list.size()));
-  }
-  if (obj.isString()) {
-    return DynamicType(static_cast<int>(obj.toString().length()));
-  }
-  throw std::runtime_error("len() not supported for this type");
-}
-
-inline DynamicType range(int stop) {
+DynamicType range(int stop) {
   std::vector<DynamicType> result;
   for (int i = 0; i < stop; ++i) {
     result.push_back(DynamicType(i));
@@ -35,7 +26,7 @@ inline DynamicType range(int stop) {
   return DynamicType(result);
 }
 
-inline DynamicType range(int start, int stop) {
+DynamicType range(int start, int stop) {
   std::vector<DynamicType> result;
   for (int i = start; i < stop; ++i) {
     result.push_back(DynamicType(i));
@@ -57,6 +48,19 @@ DynamicType range(int start, int stop, int step) {
         throw std::runtime_error("range() step argument must not be zero");
     }
     return DynamicType(result);
+}
+
+// DynamicType overloads for range()
+DynamicType range(const DynamicType& stop) {
+    return range(stop.toInt());
+}
+
+DynamicType range(const DynamicType& start, const DynamicType& stop) {
+    return range(start.toInt(), stop.toInt());
+}
+
+DynamicType range(const DynamicType& start, const DynamicType& stop, const DynamicType& step) {
+    return range(start.toInt(), stop.toInt(), step.toInt());
 }
 
 DynamicType str(const DynamicType& value) {

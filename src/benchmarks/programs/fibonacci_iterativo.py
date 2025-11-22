@@ -25,6 +25,6 @@ if __name__ == "__main__":
         result = fibonacci_iterativo(n)
         print(result)
     else:
-        # Test básico
+        # Basic test
         for i in range(1, 11):
             print(f"fib({i}) = {fibonacci_iterativo(i)}")

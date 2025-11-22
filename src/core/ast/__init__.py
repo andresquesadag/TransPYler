@@ -10,10 +10,10 @@ from .ast_definitions import *
 # Base
 from .ast_base import AstNode
 
-# Definiciones
+# Definitions
 
 
-# Exportaciones públicas
+# Public exports
 __all__ = [
     "AstNode",
     "LiteralExpr",

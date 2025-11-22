@@ -13,7 +13,7 @@ def main():
 
     t = Transpiler()
     out = t.transpile(source, filename=args.output)
-    print(f"[ok] C++ generado en: {out}")
+    print(f"[ok] C++ generated at: {out}")
 
 if __name__ == "__main__":
     main()

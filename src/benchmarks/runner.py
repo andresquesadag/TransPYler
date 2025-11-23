@@ -59,12 +59,181 @@ class BenchmarkRunner:
         
         self.programs_dir = Path(programs_dir)
         self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(exist_ok=True)
+        
+        # Create organized directory structure
+        self.build_dir = Path(__file__).parent / "build"
+        self.graphs_dir = self.output_dir / "graphs"
+        self.raw_data_dir = self.output_dir / "raw"
+        
+        # Create base directories
+        for directory in [self.build_dir, self.output_dir, self.graphs_dir, self.raw_data_dir]:
+            directory.mkdir(exist_ok=True, parents=True)
         
         self.transpiler = Transpiler()
         self.runtime_path = Path(__file__).parent.parent / "runtime" / "cpp"
         
         self.results: List[BenchmarkResult] = []
+    
+    def _get_program_build_dirs(self, program_name: str) -> Dict[str, Path]:
+        """
+        Get build directories for a specific program.
+        Creates subdirectories: build/{program}/transpiled/ and build/{program}/executables/
+        
+        Args:
+            program_name: Name of the program (e.g., 'fibonacci_recursivo')
+            
+        Returns:
+            Dictionary with 'transpiled' and 'executables' paths
+        """
+        program_build = self.build_dir / program_name
+        transpiled_dir = program_build / "transpiled"
+        executables_dir = program_build / "executables"
+        
+        # Create directories
+        transpiled_dir.mkdir(exist_ok=True, parents=True)
+        executables_dir.mkdir(exist_ok=True, parents=True)
+        
+        return {
+            'transpiled': transpiled_dir,
+            'executables': executables_dir
+        }
+    
+    def run_python_with_value(self, fangless_file: Path, value: int, 
+                             iterations: int = 3, timeout: int = 300) -> float:
+        """
+        Execute Python code with a specific hardcoded value.
+        
+        Args:
+            fangless_file: Path to the _fangless.py file
+            value: Value to hardcode (replaces n=10 or size=100)
+            iterations: Number of times to run for averaging
+            timeout: Timeout in seconds (default 5 minutes)
+            
+        Returns:
+            Average execution time in seconds
+        """
+        import re
+        
+        # Read source code
+        with open(fangless_file, 'r', encoding='utf-8') as f:
+            source_code = f.read()
+        
+        # Replace hardcoded value
+        if "n = " in source_code:
+            source_code = re.sub(r'n = \d+', f'n = {value}', source_code)
+        elif "size = " in source_code:
+            source_code = re.sub(r'size = \d+', f'size = {value}', source_code)
+        else:
+            raise ValueError(f"Could not find 'n =' or 'size =' pattern in {fangless_file}")
+        
+        # Execute multiple times and average
+        times = []
+        for _ in range(iterations):
+            start = time.time()
+            try:
+                result = subprocess.run(
+                    ["python", "-c", source_code],
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout
+                )
+                elapsed = time.time() - start
+                times.append(elapsed)
+            except subprocess.TimeoutExpired:
+                print(f"      ⏱️  TIMEOUT after {timeout}s")
+                return float('inf')  # Return infinity for timeout
+        
+        return sum(times) / len(times)
+    
+    def transpile_and_compile_with_value(self, program_name: str, fangless_file: Path, 
+                                        value: int, build_dirs: Dict[str, Path]) -> Path:
+        """
+        Transpile Python to C++ with a specific value and compile.
+        
+        Args:
+            program_name: Name of the program
+            fangless_file: Path to the _fangless.py file
+            value: Value to hardcode
+            build_dirs: Dictionary with 'transpiled' and 'executables' paths
+            
+        Returns:
+            Path to the compiled executable
+        """
+        import re
+        
+        # Read source code
+        with open(fangless_file, 'r', encoding='utf-8') as f:
+            source_code = f.read()
+        
+        # Replace hardcoded value
+        # First try to find the pattern - check for hardcoded integer values
+        n_pattern = re.search(r'n = (\d+)(?!\s*\+|\s*-|\s*\*|\s*/)', source_code)
+        size_pattern = re.search(r'size = (\d+)(?!\s*\+|\s*-|\s*\*|\s*/)', source_code)
+        
+        if size_pattern:
+            # Prefer 'size' if found
+            source_code = re.sub(r'size = \d+', f'size = {value}', source_code)
+            var_name = "size"
+        elif n_pattern:
+            # Use 'n' if found and it's a hardcoded value
+            source_code = re.sub(r'n = \d+(?!\s*\+|\s*-|\s*\*|\s*/)', f'n = {value}', source_code)
+            var_name = "n"
+        else:
+            raise ValueError(f"Could not find 'n = <number>' or 'size = <number>' pattern in {fangless_file}")
+        
+        # Transpile to C++
+        cpp_filename = f"{program_name}_{var_name}{value}.cpp"
+        cpp_file = build_dirs['transpiled'] / cpp_filename
+        
+        self.transpiler.transpile(source_code, str(cpp_file))
+        
+        # Compile
+        exe_filename = f"{program_name}_{var_name}{value}.exe"
+        exe_file = build_dirs['executables'] / exe_filename
+        
+        success = self.compile_cpp(cpp_file, exe_file, use_runtime=True)
+        
+        if not success:
+            raise RuntimeError(f"Failed to compile {cpp_file}")
+        
+        return exe_file
+    
+    def run_cpp_executable(self, exe_file: Path, iterations: int = 3, 
+                          timeout: int = 300, args: List[str] = None) -> float:
+        """
+        Execute a C++ executable and measure time.
+        
+        Args:
+            exe_file: Path to executable
+            iterations: Number of times to run for averaging
+            timeout: Timeout in seconds
+            args: Command-line arguments to pass to the executable
+            
+        Returns:
+            Average execution time in seconds
+        """
+        if args is None:
+            args = []
+        
+        cmd = [str(exe_file)] + [str(a) for a in args]
+        
+        times = []
+        for _ in range(iterations):
+            start = time.time()
+            try:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout
+                )
+                elapsed = time.time() - start
+                times.append(elapsed)
+            except subprocess.TimeoutExpired:
+                print(f"      ⏱️  TIMEOUT after {timeout}s")
+                return float('inf')
+        
+        return sum(times) / len(times)
     
     def run_python(self, python_file: Path, args: List[str] = None, 
                    iterations: int = 5) -> BenchmarkResult:
@@ -244,10 +413,159 @@ class BenchmarkRunner:
         
         return exe_file
     
+    def benchmark_algorithm(self, program_name: str, input_values: List[int],
+                           iterations: int = 3) -> List[BenchmarkResult]:
+        """
+        Complete benchmark for one algorithm across all input values.
+        Tests Python, C++ Transpiled, and C++ Manual versions.
+        
+        Args:
+            program_name: Name of the program (e.g., 'fibonacci_recursivo')
+            input_values: List of input values to test (e.g., [1, 2, 3, ..., 50])
+            iterations: Number of executions per test for averaging
+            
+        Returns:
+            List of BenchmarkResult objects
+        """
+        results = []
+        
+        # Setup paths
+        program_dir = self.programs_dir / program_name
+        fangless_file = program_dir / f"{program_name}_fangless.py"
+        manual_cpp_file = program_dir / f"{program_name}_manual.cpp"
+        
+        # Get build directories
+        build_dirs = self._get_program_build_dirs(program_name)
+        
+        print(f"\n{'='*80}")
+        print(f" BENCHMARKING: {program_name}")
+        print(f"{'='*80}")
+        print(f"Input values: {len(input_values)} values from {min(input_values)} to {max(input_values)}")
+        print(f"Iterations per test: {iterations}")
+        print()
+        
+        # Compile C++ manual version (ONCE)
+        print("[BUILD] Compiling C++ manual version...")
+        manual_exe = build_dirs['executables'] / f"{program_name}_manual.exe"
+        success = self.compile_cpp(manual_cpp_file, manual_exe, use_runtime=False)
+        if not success:
+            raise RuntimeError(f"Failed to compile {manual_cpp_file}")
+        print(f"   [OK] Compiled: {manual_exe.name}")
+        print()
+        
+        # Benchmark each input value
+        for idx, value in enumerate(input_values, 1):
+            print(f"[{idx}/{len(input_values)}] Testing with input = {value}")
+            
+            # === 1. PYTHON ===
+            print(f"  [PY] Python Fangless...", end=" ", flush=True)
+            try:
+                python_time = self.run_python_with_value(fangless_file, value, iterations)
+                if python_time == float('inf'):
+                    print("TIMEOUT")
+                else:
+                    print(f"{python_time:.6f}s")
+                
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="python",
+                    input_size=value,
+                    execution_time=python_time,
+                    iterations=iterations
+                ))
+            except Exception as e:
+                print(f"ERROR: {e}")
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="python",
+                    input_size=value,
+                    execution_time=float('inf'),
+                    iterations=0,
+                    output=f"ERROR: {e}"
+                ))
+            
+            # === 2. C++ TRANSPILED ===
+            print(f"  [C++T] C++ Transpiled...", end=" ", flush=True)
+            try:
+                # Transpile and compile
+                cpp_exe = self.transpile_and_compile_with_value(
+                    program_name, fangless_file, value, build_dirs
+                )
+                
+                # Execute and measure
+                cpp_trans_time = self.run_cpp_executable(cpp_exe, iterations)
+                if cpp_trans_time == float('inf'):
+                    print("TIMEOUT")
+                else:
+                    print(f"{cpp_trans_time:.6f}s")
+                
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="cpp_transpiled",
+                    input_size=value,
+                    execution_time=cpp_trans_time,
+                    iterations=iterations
+                ))
+            except Exception as e:
+                print(f"ERROR: {e}")
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="cpp_transpiled",
+                    input_size=value,
+                    execution_time=float('inf'),
+                    iterations=0,
+                    output=f"ERROR: {e}"
+                ))
+            
+            # === 3. C++ MANUAL ===
+            print(f"  [C++M] C++ Manual...", end=" ", flush=True)
+            try:
+                # Manual C++ accepts command-line arguments
+                cpp_manual_time = self.run_cpp_executable(manual_exe, iterations, args=[value])
+                if cpp_manual_time == float('inf'):
+                    print("TIMEOUT")
+                else:
+                    print(f"{cpp_manual_time:.6f}s")
+                
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="cpp_manual",
+                    input_size=value,
+                    execution_time=cpp_manual_time,
+                    iterations=iterations
+                ))
+            except Exception as e:
+                print(f"ERROR: {e}")
+                results.append(BenchmarkResult(
+                    program_name=program_name,
+                    language="cpp_manual",
+                    input_size=value,
+                    execution_time=float('inf'),
+                    iterations=0,
+                    output=f"ERROR: {e}"
+                ))
+            
+            # Show speedup
+            if python_time != float('inf') and cpp_trans_time != float('inf'):
+                speedup_trans = python_time / cpp_trans_time
+                print(f"     Speedup (transpiled): {speedup_trans:.2f}x")
+            if python_time != float('inf') and cpp_manual_time != float('inf'):
+                speedup_manual = python_time / cpp_manual_time
+                print(f"     Speedup (manual): {speedup_manual:.2f}x")
+            print()
+        
+        print(f"{'='*80}")
+        print(f" COMPLETED: {program_name}")
+        print(f"{'='*80}\n")
+        
+        self.results.extend(results)
+        return results
+    
     def benchmark_program(self, program_name: str, input_sizes: List[int],
                          iterations: int = 5) -> List[BenchmarkResult]:
         """
         Run complete benchmark of a program in all 3 versions.
+        This is a wrapper around benchmark_algorithm for backward compatibility.
         
         Args:
             program_name: Base name of the program (without extension)
@@ -257,90 +575,8 @@ class BenchmarkRunner:
         Returns:
             List of BenchmarkResults
         """
-        results = []
-        
-        # Files
-        python_file = self.programs_dir / f"{program_name}.py"  # Full version for Python execution
-        python_simple_file = self.programs_dir / f"{program_name}_simple.py"  # Simplified for transpiling
-        cpp_manual_file = self.programs_dir / f"{program_name}_manual.cpp"
-        
-        print(f"\n{'='*60}")
-        print(f"Benchmarking: {program_name}")
-        print(f"{'='*60}")
-        
-        # Compile manual C++ version once
-        print("Compiling manual C++...")
-        cpp_manual_exe = self.compile_manual_cpp(cpp_manual_file)
-        
-        # Run benchmarks for each input size
-        for size in input_sizes:
-            print(f"\nTesting with input size: {size}")
-            
-            # 1. Python (original version with sys.argv support)
-            print("  Running Python...")
-            py_result = self.run_python(python_file, [size], iterations)
-            py_result.language = "python"
-            results.append(py_result)
-            print(f"    Time: {py_result.execution_time:.6f}s")
-            
-            # 2. C++ Transpiled (compile simplified version for each input size)
-            print("  Transpiling and compiling Python to C++...")
-            try:
-                cpp_transpiled_exe = self.transpile_and_compile(python_simple_file, size)
-                print("  Running C++ (transpiled)...")
-                # Don't pass arguments - the value is hardcoded in the transpiled code
-                cpp_trans_result = self.run_cpp(cpp_transpiled_exe, [], iterations)
-                cpp_trans_result.program_name = program_name
-                cpp_trans_result.language = "cpp_transpiled"
-                cpp_trans_result.input_size = size  # Set manually since no args passed
-                results.append(cpp_trans_result)
-                print(f"    Time: {cpp_trans_result.execution_time:.6f}s")
-            except Exception as e:
-                print(f"    ERROR transpiling: {e}")
-                # Create a dummy result with error
-                cpp_trans_result = BenchmarkResult(
-                    program_name=program_name,
-                    language="cpp_transpiled",
-                    input_size=size,
-                    execution_time=float('inf'),
-                    iterations=0,
-                    output=f"ERROR: {e}"
-                )
-                results.append(cpp_trans_result)
-            
-            # 3. C++ Manual (optimized hand-written version)
-            print("  Running C++ (manual)...")
-            cpp_manual_result = self.run_cpp(cpp_manual_exe, [size], iterations)
-            cpp_manual_result.program_name = program_name
-            cpp_manual_result.language = "cpp_manual"
-            results.append(cpp_manual_result)
-            print(f"    Time: {cpp_manual_result.execution_time:.6f}s")
-            
-            # Show speedup
-            if cpp_trans_result.execution_time != float('inf'):
-                speedup_trans = py_result.execution_time / cpp_trans_result.execution_time
-                print(f"    Speedup (transpiled): {speedup_trans:.2f}x")
-            speedup_manual = py_result.execution_time / cpp_manual_result.execution_time
-            print(f"    Speedup (manual): {speedup_manual:.2f}x")
-            results.append(cpp_trans_result)
-            print(f"    Time: {cpp_trans_result.execution_time:.6f}s")
-            
-            # C++ Manual
-            print("  Running C++ (manual)...")
-            cpp_manual_result = self.run_cpp(cpp_manual_exe, [size], iterations)
-            cpp_manual_result.program_name = program_name
-            cpp_manual_result.language = "cpp_manual"
-            results.append(cpp_manual_result)
-            print(f"    Time: {cpp_manual_result.execution_time:.6f}s")
-            
-            # Show speedup
-            speedup_trans = py_result.execution_time / cpp_trans_result.execution_time
-            speedup_manual = py_result.execution_time / cpp_manual_result.execution_time
-            print(f"    Speedup (transpiled): {speedup_trans:.2f}x")
-            print(f"    Speedup (manual): {speedup_manual:.2f}x")
-        
-        self.results.extend(results)
-        return results
+        # Simply call the updated benchmark_algorithm method
+        return self.benchmark_algorithm(program_name, input_sizes, iterations)
     
     def save_results(self, filename: str = "benchmark_results"):
         """

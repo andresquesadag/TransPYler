@@ -95,7 +95,7 @@ def _render_elements_node(
     _add_list(b, "elements", elements or [], _render_node, verbose)
 
 
-# ---------- RENDER (Rich, genérico) ----
+# ---------- RENDER (Rich, generic) ----
 
 
 def build_rich_tree_generic(

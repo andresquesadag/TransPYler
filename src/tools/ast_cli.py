@@ -63,7 +63,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _read_source(args: argparse.Namespace) -> tuple[str, str]:
-    """Devuelve (source_text, src_label)."""
+    """Returns (source_text, src_label)."""
     if args.expr is not None:
         return args.expr, "[inline expr]"
     try:

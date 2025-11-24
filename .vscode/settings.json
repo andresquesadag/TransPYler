@@ -59,6 +59,7 @@
     "map": "cpp",
     "any": "cpp",
     "set": "cpp",
-    "optional": "cpp"
+    "optional": "cpp",
+    "unordered_set": "cpp"
   }
 }

@@ -7,13 +7,16 @@
 
 DynamicType len(const DynamicType &obj) {
     if (obj.isList()) {
-        return DynamicType(static_cast<int>(obj.getList().size()));
+      return DynamicType(static_cast<int>(obj.getList().size()));
     }
     if (obj.isDict()) {
-        return DynamicType(static_cast<int>(obj.getDict().size()));
+      return DynamicType(static_cast<int>(obj.getDict().size()));
+    }
+    if( obj.isSet()) {
+      return DynamicType(static_cast<int>(obj.getSet().size()));
     }
     if (obj.isString()) {
-        return DynamicType(static_cast<int>(obj.toString().length()));
+      return DynamicType(static_cast<int>(obj.toString().length()));
     }
     throw std::runtime_error("len() not supported for this type");
 }
@@ -120,6 +123,7 @@ DynamicType type(const DynamicType& value) {
         case DynamicType::Type::BOOL:   return DynamicType("<class 'bool'>");
         case DynamicType::Type::LIST:   return DynamicType("<class 'list'>");
         case DynamicType::Type::DICT:   return DynamicType("<class 'dict'>");
+        case DynamicType::Type::SET:    return DynamicType("<class 'set'>");
         default: return DynamicType("<class 'unknown'>");
     }
 }
@@ -135,4 +139,25 @@ DynamicType input(const std::string& prompt) {
 
 DynamicType input() {
     return input("");
+}
+
+DynamicType set() {
+    return DynamicType(std::unordered_set<DynamicType>());
+}
+
+DynamicType set(const DynamicType& iterable) {
+    std::unordered_set<DynamicType> result;
+    
+    if (iterable.isList()) {
+        const std::vector<DynamicType>& list = iterable.getList();
+        for (const DynamicType& item : list) {
+            result.insert(item);
+        }
+    } else if (iterable.isSet()) {
+        result = iterable.getSet();
+    } else {
+        throw std::runtime_error("set() requires an iterable (list or set)");
+    }
+    
+    return DynamicType(result);
 }

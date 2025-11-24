@@ -50,4 +50,8 @@ DynamicType type(const DynamicType& value);
 DynamicType input(const std::string& prompt);
 DynamicType input();
 
+// Collection functions
+DynamicType set();
+DynamicType set(const DynamicType& iterable);
+
 #endif // BUILTINS_HPP

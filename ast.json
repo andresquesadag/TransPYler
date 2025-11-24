@@ -2,23 +2,67 @@
   "_type": "Module",
   "body": [
     {
-      "_type": "ExprStmt",
-      "value": {
+      "_type": "Assign",
+      "target": {
         "_type": "Identifier",
-        "name": "import",
+        "name": "arr",
         "line": 2,
         "col": 1
+      },
+      "op": "=",
+      "value": {
+        "_type": "ListExpr",
+        "elements": [
+          {
+            "_type": "LiteralExpr",
+            "value": 1,
+            "line": 2,
+            "col": 8
+          },
+          {
+            "_type": "LiteralExpr",
+            "value": 2,
+            "line": 2,
+            "col": 11
+          },
+          {
+            "_type": "LiteralExpr",
+            "value": 3,
+            "line": 2,
+            "col": 14
+          }
+        ],
+        "line": 2,
+        "col": 7
       },
       "line": 0,
       "col": 0
     },
     {
-      "_type": "ExprStmt",
+      "_type": "Assign",
+      "target": {
+        "_type": "Subscript",
+        "value": {
+          "_type": "Identifier",
+          "name": "arr",
+          "line": 3,
+          "col": 17
+        },
+        "index": {
+          "_type": "LiteralExpr",
+          "value": 0,
+          "line": 3,
+          "col": 21
+        },
+        "line": 0,
+        "col": 0
+      },
+      "op": "=",
       "value": {
-        "_type": "Identifier",
-        "name": "sys",
-        "line": 2,
-        "col": 8
+        "_type": "LiteralExpr",
+        "value": 5,
+        "line": 3,
+        "col": 26
       },
       "line": 0,
       "col": 0

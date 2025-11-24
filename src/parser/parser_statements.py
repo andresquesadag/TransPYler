@@ -21,6 +21,7 @@ class StatementRules:
         """statement : simple_statement
         | compound_statement"""
         p[0] = p[1]
+
     # TODO(Randy): Simple and small statements are currently the same.
     # Consider merging them or differentiating them more clearly.
     def p_simple_statement(self, p):
@@ -42,6 +43,39 @@ class StatementRules:
                 p[0] = p[1]
 
     # ---------------------- ASSIGNMENTS ----------------------
+    # arr[i] = value and arr[i] += value
+    def p_assignment_subscript(self, p):
+        """assignment : atom LBRACKET expr RBRACKET ASSIGN expr
+        | atom LBRACKET expr RBRACKET PLUS_ASSIGN expr
+        | atom LBRACKET expr RBRACKET MINUS_ASSIGN expr
+        | atom LBRACKET expr RBRACKET TIMES_ASSIGN expr
+        | atom LBRACKET expr RBRACKET DIVIDE_ASSIGN expr
+        | atom LBRACKET expr RBRACKET FLOOR_DIVIDE_ASSIGN expr
+        | atom LBRACKET expr RBRACKET MOD_ASSIGN expr
+        | atom LBRACKET expr RBRACKET POWER_ASSIGN expr"""
+        line, col = _pos(p, 1)
+        target = Subscript(value=p[1], index=p[3], line=line, col=col)
+        value = p[6]
+        op = p[5]
+        p[0] = Assign(target=target, op=op, value=value, line=line, col=col)
+
+    # obj.attr = value and obj.attr += value
+    def p_assignment_attribute(self, p):
+        """assignment : atom DOT ID ASSIGN expr
+        | atom DOT ID PLUS_ASSIGN expr
+        | atom DOT ID MINUS_ASSIGN expr
+        | atom DOT ID TIMES_ASSIGN expr
+        | atom DOT ID DIVIDE_ASSIGN expr
+        | atom DOT ID FLOOR_DIVIDE_ASSIGN expr
+        | atom DOT ID MOD_ASSIGN expr
+        | atom DOT ID POWER_ASSIGN expr"""
+        line, col = _pos(p, 2)
+        target = Attribute(value=p[1], attr=p[3], line=line, col=col)
+        value = p[5]
+        op = p[4]
+        p[0] = Assign(target=target, op=op, value=value, line=line, col=col)
+
+    # x = value, (a,b) = value, etc.
     def p_assignment(self, p):
         """assignment : assign_targets ASSIGN expr
         | assign_targets PLUS_ASSIGN expr

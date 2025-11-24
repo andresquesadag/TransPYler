@@ -168,10 +168,14 @@ DynamicType sublist(const DynamicType& list, const DynamicType& start, const Dyn
     if (!list.isList()) {
         throw std::runtime_error("sublist() can only be called on lists");
     }
-    return list.sublist(start, end);
+    
+    // Convert DynamicType arguments to size_t
+    size_t startIdx = static_cast<size_t>(start.toInt());
+    size_t endIdx = static_cast<size_t>(end.toInt());
+    
+    // Create a non-const copy to call sublist
+    DynamicType listCopy = list;
+    return listCopy.sublist(startIdx, endIdx);
 }
 
-// Set constructor
-DynamicType set_() {
-    return DynamicType(std::set<DynamicType>());
-}
+

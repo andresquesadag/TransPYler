@@ -167,9 +167,9 @@ class DataStructureGenerator:
             else:
                 elements.append(self.visit(e))
         
-        # Use std::set<DynamicType> for proper set semantics
+        # Use std::unordered_set<DynamicType> for proper set semantics
         elements_str = ', '.join(elements)
-        return f"DynamicType(std::set<DynamicType>{{{elements_str}}})"
+        return f"DynamicType(std::unordered_set<DynamicType>{{{elements_str}}})"
 
     def _deduce_cpp_set_type(self, node):
         """

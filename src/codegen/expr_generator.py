@@ -157,7 +157,7 @@ class ExprGenerator:
             "sum": "sum",
             "type": "type",
             "input": "input",
-            "set": "set_",
+            "set": "::set",  # Use global namespace to avoid ambiguity with std::set
         }
         
         # Use DynamicType overloads for all builtin functions including range()
@@ -209,7 +209,7 @@ class ExprGenerator:
         # Fallback implementation (use proper set)
         elements = [self.visit(e) for e in node.elements]
         elements_str = ', '.join(elements)
-        return f"DynamicType(std::set<DynamicType>{{{elements_str}}})"
+        return f"DynamicType(std::unordered_set<DynamicType>{{{elements_str}}})"
 
     # ---------- Subscript expressions (indexing and slicing) ----------
     def visit_Subscript(self, node) -> str:

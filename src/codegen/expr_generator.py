@@ -67,7 +67,6 @@ class ExprGenerator:
             raise NotImplementedError(
                 f"ExprGenerator does not support nodes of type {type(node).__name__}"
             )
-        # TODO(any): m is not callable
         return m(node)
 
     # ---------- Literals ----------
@@ -301,32 +300,26 @@ class ExprGenerator:
         args_code = [self.visit(a) for a in args]
 
         # Map Python data structure methods to DynamicType C++ methods
-        # TODO(any): pop key is duplicated, need to differentiate between list.pop() and dict.pop(key) maybe?
         data_structure_methods = {
             # List methods
             "append": {"params": 1, "cpp_method": "append"},
             "pop": {
-                "params": 0,
+                "params": -1,  # Variable params: 0 for list, 1 for dict
                 "cpp_method": "removeAt",
                 "default_args": ["DynamicType(-1)"],
-            },  # pop() -> removeAt(-1)
-            "remove": {"params": 1, "cpp_method": "remove"},  # For sets
+            },  # pop() for lists -> removeAt(-1), dict.pop(key) -> removeKey(key)
+            "remove": {
+                "params": 1,
+                "cpp_method": "remove",
+            },  # remove(value) for lists and sets (different behavior but same method name)
             # Dict methods
             "get": {"params": 1, "cpp_method": "get"},
-            "pop": {
-                "params": 1,
-                "cpp_method": "removeKey",
-            },  # dict.pop(key) -> removeKey(key)
             # Set methods
             "add": {"params": 1, "cpp_method": "add"},
             "discard": {
                 "params": 1,
                 "cpp_method": "remove",
             },  # set.discard -> remove (but should not throw)
-            "remove": {
-                "params": 1,
-                "cpp_method": "remove",
-            },  # set.remove -> remove (throws if not found)
         }
 
         if method_name in data_structure_methods:
@@ -334,9 +327,14 @@ class ExprGenerator:
             cpp_method = method_info["cpp_method"]
 
             # Handle special cases
-            if method_name == "pop" and len(args) == 0:
-                # list.pop() without args -> removeAt(-1)
-                return f"({obj_code}).{cpp_method}(DynamicType(-1))"
+            if method_name == "pop":
+                # Differentiate between list.pop() and dict.pop(key)
+                if len(args) == 0:
+                    # list.pop() without args -> removeAt(-1)
+                    return f"({obj_code}).removeAt(DynamicType(-1))"
+                else:
+                    # dict.pop(key) -> removeKey(key)
+                    return f"({obj_code}).removeKey({args_code[0]})"
             elif method_name in ["sublist", "slice"]:
                 # Handle slicing - expecting 2 args (start, end)
                 if len(args_code) == 2:

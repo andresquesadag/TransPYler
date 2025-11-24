@@ -9,7 +9,7 @@ from .ast.ast_definitions import FunctionDef, ClassDef, Attribute, Subscript
 
 # --- Expressions ---
 from .ast.ast_expressions import (
-    LiteralExpr, Identifier, UnaryExpr, BinaryExpr, CallExpr, ListExpr
+    LiteralExpr, Identifier, UnaryExpr, BinaryExpr, CallExpr, ListExpr, TupleExpr
 )
 
 # --- Statements / control flow ---
@@ -24,7 +24,7 @@ from .utils import *
 __all__ = [
     "AstNode", "Module",
     "FunctionDef", "ClassDef", "Attribute", "Subscript",
-    "LiteralExpr", "Identifier", "UnaryExpr", "BinaryExpr", "CallExpr", "ListExpr",
+    "LiteralExpr", "Identifier", "UnaryExpr", "BinaryExpr", "CallExpr", "ListExpr", "TupleExpr",
     "Block", "ExprStmt", "Assign", "Return", "If", "While", "For", "Break", "Continue", "Pass",
 ]
 

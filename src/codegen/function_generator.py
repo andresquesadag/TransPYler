@@ -39,7 +39,9 @@ class FunctionGenerator:
         self.scope = scope
         self.expr_gen = ExprGenerator(scope=self.scope)
         self.basic_stmt = BasicStatementGenerator(self.scope)
-        self.ctrl_stmt = StatementVisitor(expr_generator=self.expr_gen, scope_manager=self.scope)
+        self.ctrl_stmt = StatementVisitor(
+            expr_generator=self.expr_gen, scope_manager=self.scope
+        )
 
     def visit(self, node: FunctionDef) -> str:
         if not isinstance(node, FunctionDef):
@@ -66,11 +68,11 @@ class FunctionGenerator:
             # node.body can be either a list of statements or a Block node
             if isinstance(node.body, list):
                 statements = node.body
-            elif hasattr(node.body, 'statements'):
+            elif hasattr(node.body, "statements"):
                 statements = node.body.statements
             else:
                 statements = [node.body]
-            
+
             for stmt in statements:
                 body_lines.append(self._emit_stmt(stmt))
             has_top_return = any(isinstance(s, Return) for s in statements)

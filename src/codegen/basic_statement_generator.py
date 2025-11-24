@@ -67,39 +67,110 @@ class BasicStatementGenerator:
             raise NotImplementedError(
                 f"BasicStatementGenerator does not support node type {type(node).__name__}"
             )
-        return method(node)
+        return method(node)  # TODO(any): method is not callable
 
     # ---------- Assignment Statements ----------
     def visit_Assign(self, node: Assign) -> str:
         """
         Generate C++ code for an assignment statement.
+
+        Supports both simple assignment (=) and augmented assignments (+=, -=, *=, /=, //=, %=, **=).
+
         Args:
             node (Assign): AST node representing an assignment.
         Returns:
             str: C++ assignment code.
         """
         rhs_code = self.expr.visit(node.value)
-        
-        # Handle simple identifier assignment
+
         if isinstance(node.target, Identifier):
             name = node.target.name
-            
-            # Declare variable on first assignment
-            if not self.scope.exists(name):
-                self.scope.declare(name)
-                return f"DynamicType {name} = {rhs_code};"
+            op = node.op
 
-            # Reassign existing variable
-            return f"{name} = {rhs_code};"
-        
+            # Simple assignment: x = value
+            if op == "=":
+                # Declare variable on first assignment
+                if not self.scope.exists(name):
+                    self.scope.declare(name)
+                    return f"DynamicType {name} = {rhs_code};"
+                # Reassign existing variable
+                return f"{name} = {rhs_code};"
+
+            # Augmented assignment: x += value, x -= value, etc.
+            # Ensure variable exists
+            if not self.scope.exists(name):
+                raise RuntimeError(
+                    f"Variable '{name}' used before declaration in augmented assignment"
+                )
+
+            augmented_ops = {
+                "+=": "+",
+                "-=": "-",
+                "*=": "*",
+                "/=": "/",
+                "//=": "//",
+                "%=": "%",
+                "**=": "**",
+            }
+
+            if op not in augmented_ops:
+                raise NotImplementedError(
+                    f"Augmented assignment operator '{op}' not supported"
+                )
+
+            base_op = augmented_ops[op]
+
+            # Generate: x = x op value
+            # Special cases for operations that need method calls
+            if base_op == "//":
+                # x //= y  ->  x = x.floor_div(y)
+                return f"{name} = ({name}).floor_div({rhs_code});"
+            if base_op == "**":
+                # x **= y  ->  x = x.pow(y)
+                return f"{name} = ({name}).pow({rhs_code});"
+            # Standard operators: x += y  ->  x = x + y
+            return f"{name} = ({name}) {base_op} ({rhs_code});"
+
         # Handle subscript assignment (e.g., arr[i] = value)
         elif isinstance(node.target, Subscript):
             lhs_code = self.expr.visit(node.target)
-            return f"{lhs_code} = {rhs_code};"
-        
+            op = node.op
+
+            if op == "=":
+                # Simple subscript assignment: arr[i] = value
+                return f"{lhs_code} = {rhs_code};"
+            else:
+                # Augmented subscript assignment: arr[i] += value
+                augmented_ops = {
+                    "+=": "+",
+                    "-=": "-",
+                    "*=": "*",
+                    "/=": "/",
+                    "//=": "//",
+                    "%=": "%",
+                    "**=": "**",
+                }
+
+                if op not in augmented_ops:
+                    raise NotImplementedError(
+                        f"Augmented assignment operator '{op}' not supported for subscripts"
+                    )
+
+                base_op = augmented_ops[op]
+
+                # Special handling for floor division and power
+                if base_op == "//":
+                    return f"{lhs_code} = ({lhs_code}).floor_div({rhs_code});"
+                elif base_op == "**":
+                    return f"{lhs_code} = ({lhs_code}).pow({rhs_code});"
+                else:
+                    return f"{lhs_code} = ({lhs_code}) {base_op} ({rhs_code});"
+
         # Invalid assignment target
         else:
-            raise NotImplementedError(f"Assignment to {type(node.target).__name__} is not supported")
+            raise NotImplementedError(
+                f"Assignment to {type(node.target).__name__} is not supported"
+            )
 
     # ---------- Expression Statements ----------
     def visit_ExprStmt(self, node: ExprStmt) -> str:
@@ -111,9 +182,9 @@ class BasicStatementGenerator:
             str: C++ expression code terminated with semicolon.
         """
         # Special handling for import statements - ignore them
-        if hasattr(node.value, 'name') and node.value.name in ['import', 'sys']:
+        if hasattr(node.value, "name") and node.value.name in ["import", "sys"]:
             return ""  # Skip import/sys identifier statements
-        
+
         code = self.expr.visit(node.value)
         return f"{code};"
 

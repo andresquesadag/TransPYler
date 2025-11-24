@@ -10,7 +10,7 @@ Key Features:
 - Used by CodeGenerator to handle all control flow code generation.
 - Includes helpers for type deduction in C++ for for-each loops and other control flow helpers.
 """
-
+# TODO(any): List and Optional are imported but not used
 from typing import List, Optional
 
 
@@ -34,7 +34,9 @@ class StatementVisitor:
         self.indent_str = "    "
         self.expr_generator = expr_generator
         self.scope_manager = scope_manager
-        self._iter_counter = 0  # Counter for generating readable iterator variable names
+        self._iter_counter = (
+            0  # Counter for generating readable iterator variable names
+        )
 
     def indent(self) -> str:
         """
@@ -55,7 +57,8 @@ class StatementVisitor:
         method_name = f"visit_{node.__class__.__name__}_cpp"
         visitor = getattr(self, method_name, None)
         if visitor and callable(visitor):
-                return visitor(node)
+            # TODO(any): visitor is not a callable
+            return visitor(node)
         return self.generic_visit(node)
 
     def generic_visit(self, node) -> str:
@@ -67,11 +70,11 @@ class StatementVisitor:
                 str: TODO comment for unsupported node type.
         """
         # For basic statements, delegate back to calling generator
-        if node.__class__.__name__ in ['ExprStmt', 'Assign', 'Return']:
-            raise NotImplementedError(f"BasicStatementGenerator should handle {node.__class__.__name__}")
+        if node.__class__.__name__ in ["ExprStmt", "Assign", "Return"]:
+            raise NotImplementedError(
+                f"BasicStatementGenerator should handle {node.__class__.__name__}"
+            )
         return f"// TODO: {node.__class__.__name__}"
-
-
 
     # --- C++ ---
     def visit_Block_cpp(self, node):
@@ -89,7 +92,7 @@ class StatementVisitor:
             stmt_code = self.visit(stmt)
             if stmt_code.strip():  # Only add non-empty statements
                 # Add semicolon if statement doesn't end with } or ;
-                if not stmt_code.strip().endswith((';', '}')):
+                if not stmt_code.strip().endswith((";", "}")):
                     stmt_code += ";"
                 code.append(self.indent() + stmt_code)
         self.indent_level -= 1
@@ -106,28 +109,36 @@ class StatementVisitor:
         """
         code = []
         # Main condition - need to convert to boolean for C++
-        cond_code = self.expr_generator.visit(node.cond) if hasattr(self, 'expr_generator') else str(node.cond)
+        cond_code = (
+            self.expr_generator.visit(node.cond)
+            if hasattr(self, "expr_generator")
+            else str(node.cond)
+        )
         # If it's already a DynamicType, just call toBool(), otherwise wrap it
-        if cond_code.startswith('DynamicType('):
+        if cond_code.startswith("DynamicType("):
             code.append(f"if ({cond_code}.toBool())")
         else:
             code.append(f"if (DynamicType({cond_code}).toBool())")
-        
+
         # Body
         body_code = self.visit(node.body)
         code.append(body_code)
-        
+
         # Elif clauses
-        for elif_cond, elif_body in getattr(node, 'elifs', []):
-            elif_cond_code = self.expr_generator.visit(elif_cond) if hasattr(self, 'expr_generator') else str(elif_cond)
+        for elif_cond, elif_body in getattr(node, "elifs", []):
+            elif_cond_code = (
+                self.expr_generator.visit(elif_cond)
+                if hasattr(self, "expr_generator")
+                else str(elif_cond)
+            )
             code.append(f"else if (({elif_cond_code}).toBool())")
             code.append(self.visit(elif_body))
-        
+
         # Else clause
-        if hasattr(node, 'orelse') and node.orelse:
+        if hasattr(node, "orelse") and node.orelse:
             code.append("else")
             code.append(self.visit(node.orelse))
-        
+
         return "\n".join(code)
 
     def visit_While_cpp(self, node):
@@ -138,9 +149,13 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the while loop.
         """
-        cond_code = self.expr_generator.visit(node.cond) if hasattr(self, 'expr_generator') else str(node.cond)
+        cond_code = (
+            self.expr_generator.visit(node.cond)
+            if hasattr(self, "expr_generator")
+            else str(node.cond)
+        )
         # If it's already a DynamicType, just call toBool(), otherwise wrap it
-        if cond_code.startswith('DynamicType('):
+        if cond_code.startswith("DynamicType("):
             code = [f"while ({cond_code}.toBool())"]
         else:
             code = [f"while (DynamicType({cond_code}).toBool())"]
@@ -155,9 +170,17 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the for-each loop.
         """
-        iterable_code = self.expr_generator.visit(node.iterable) if hasattr(self, 'expr_generator') else str(node.iterable)
-        target_code = self.expr_generator.visit(node.target) if hasattr(self, 'expr_generator') else str(node.target)
-        
+        iterable_code = (
+            self.expr_generator.visit(node.iterable)
+            if hasattr(self, "expr_generator")
+            else str(node.iterable)
+        )
+        target_code = (
+            self.expr_generator.visit(node.target)
+            if hasattr(self, "expr_generator")
+            else str(node.target)
+        )
+
         # For DynamicType, we need to avoid dangling references when the iterable
         # is a temporary (e.g., range(...)). We do this by creating a local copy.
         # Use a readable counter-based name instead of UUID
@@ -174,6 +197,7 @@ class StatementVisitor:
         code.append("}")
         return "\n".join(code)
 
+    # TODO(any): Is the node argument needed? It's not used in these methods.
     def visit_Break_cpp(self, node):
         """
         Generates C++ code for a break statement.
@@ -212,7 +236,7 @@ class StatementVisitor:
         Returns:
                 str: C++ code for the expression statement.
         """
-        if hasattr(self, 'expr_generator') and self.expr_generator:
+        if hasattr(self, "expr_generator") and self.expr_generator:
             code = self.expr_generator.visit(node.value)
             return f"{code};"
         else:
@@ -229,10 +253,14 @@ class StatementVisitor:
         """
         # This should be handled by BasicStatementGenerator, not here
         # But we provide a basic implementation as fallback
-        if hasattr(node.target, 'name') and hasattr(self, 'expr_generator') and self.expr_generator:
+        if (
+            hasattr(node.target, "name")
+            and hasattr(self, "expr_generator")
+            and self.expr_generator
+        ):
             name = node.target.name
             rhs_code = self.expr_generator.visit(node.value)
-            
+
             # Check if variable needs declaration
             if self.scope_manager and not self.scope_manager.exists(name):
                 self.scope_manager.declare(name)
@@ -252,7 +280,7 @@ class StatementVisitor:
         """
         if node.value is None:
             return "return DynamicType();"
-        elif hasattr(self, 'expr_generator') and self.expr_generator:
+        elif hasattr(self, "expr_generator") and self.expr_generator:
             return f"return {self.expr_generator.visit(node.value)};"
         else:
             return "return DynamicType();"

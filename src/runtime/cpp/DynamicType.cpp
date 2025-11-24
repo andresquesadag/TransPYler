@@ -163,23 +163,20 @@ bool DynamicType::toBool() const {
 }
 
 DynamicType DynamicType::operator+(const DynamicType &other) const {
-  // List concatenation
+  // Concats
   if (type == Type::LIST && other.type == Type::LIST) {
-    auto left = std::any_cast<std::vector<DynamicType>>(value);
-    auto right = std::any_cast<std::vector<DynamicType>>(other.value);
+    std::vector<DynamicType> left = std::any_cast<std::vector<DynamicType>>(value);
+    std::vector<DynamicType> right = std::any_cast<std::vector<DynamicType>>(other.value);
     
-    // Concatenate vectors
     std::vector<DynamicType> result = left;
     result.insert(result.end(), right.begin(), right.end());
     
     return DynamicType(result);
   }
 
-  // String concat
   if (type == Type::STRING || other.type == Type::STRING) {
     return DynamicType(toString() + other.toString());
   }
-
   // Numeric addition
   if (type == Type::DOUBLE || other.type == Type::DOUBLE) {
     return DynamicType(toDouble() + other.toDouble());
@@ -432,7 +429,6 @@ const std::map<std::string, DynamicType>& DynamicType::getDict() const {
   }
 }
 
-// Set access methods
 std::unordered_set<DynamicType>& DynamicType::getSet() {
   if(type != Type::SET) {
     throw std::runtime_error("Type is not a set");
@@ -455,7 +451,6 @@ const std::unordered_set<DynamicType>& DynamicType::getSet() const {
   }
 }
 
-// List sublist methods
 DynamicType DynamicType::sublist(size_t start, size_t end) {
   if(type != Type::LIST) {
     throw std::runtime_error("Type is not a list");
@@ -496,7 +491,6 @@ DynamicType DynamicType::sublist(size_t start, size_t end, size_t step) {
   return DynamicType(newList);
 }
 
-// Set add method
 void DynamicType::add(const DynamicType &item) {
   if(type != Type::SET) {
     throw std::runtime_error("add() can only be called on sets");
@@ -506,7 +500,6 @@ void DynamicType::add(const DynamicType &item) {
   set.insert(item);
 }
 
-// List append method
 void DynamicType::append(const DynamicType &item) {
   if(type != Type::LIST) {
     throw std::runtime_error("append() can only be called on lists");
@@ -516,7 +509,6 @@ void DynamicType::append(const DynamicType &item) {
   list.push_back(item);
 }
 
-// List remove method (by index)
 void DynamicType::remove(size_t index) {
   if(type != Type::LIST) {
     throw std::runtime_error("remove() by index can only be called on lists");
@@ -530,7 +522,6 @@ void DynamicType::remove(size_t index) {
   list.erase(list.begin() + index);
 }
 
-// Dictionary remove method (by key)
 void DynamicType::remove(const std::string &key) {
   if(type != Type::DICT) {
     throw std::runtime_error("remove() by key can only be called on dictionaries");
@@ -540,7 +531,6 @@ void DynamicType::remove(const std::string &key) {
   dict.erase(key);
 }
 
-// Set remove method (by item)
 void DynamicType::remove(const DynamicType &item) {
   if(type != Type::SET) {
     throw std::runtime_error("remove() by item can only be called on sets");
@@ -572,7 +562,6 @@ bool DynamicType::contains(const DynamicType& key) const {
   }
 }
 
-// Dictionary set method
 void DynamicType::set(const std::string &key, const DynamicType &value) {
   if(type != Type::DICT) {
     throw std::runtime_error("set() can only be called on dictionaries");
@@ -582,7 +571,6 @@ void DynamicType::set(const std::string &key, const DynamicType &value) {
   dict[key] = value;
 }
 
-// Dictionary get method
 DynamicType DynamicType::get(const std::string &key) const {
   if(type != Type::DICT) {
     throw std::runtime_error("get() can only be called on dictionaries");

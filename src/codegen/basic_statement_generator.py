@@ -19,7 +19,7 @@ Architecture:
 - Generates C++ code with proper semicolon termination
 
 Restrictions:
-- Assignment targets must be simple identifiers (no subscripts or attributes)
+- Assignment targets support simple identifiers and subscripts (arr[i] = value)
 - Supports C++ target only (future: Python support)
 - Variables are declared as DynamicType on first assignment
 
@@ -34,7 +34,7 @@ Usage:
 
 """
 
-from src.core import AstNode, Assign, ExprStmt, Return, Identifier
+from src.core import AstNode, Assign, ExprStmt, Return, Identifier, Subscript
 from .expr_generator import ExprGenerator
 from .scope_manager import ScopeManager
 
@@ -77,24 +77,29 @@ class BasicStatementGenerator:
             node (Assign): AST node representing an assignment.
         Returns:
             str: C++ assignment code.
-        Raises:
-            NotImplementedError: If assignment target is not a simple identifier.
         """
-        if not isinstance(node.target, Identifier):
-            raise NotImplementedError(
-                "Assignment only supports simple identifiers (no subscripts or attributes)"
-            )
-
-        name = node.target.name
         rhs_code = self.expr.visit(node.value)
+        
+        # Handle simple identifier assignment
+        if isinstance(node.target, Identifier):
+            name = node.target.name
+            
+            # Declare variable on first assignment
+            if not self.scope.exists(name):
+                self.scope.declare(name)
+                return f"DynamicType {name} = {rhs_code};"
 
-        # Declare variable on first assignment
-        if not self.scope.exists(name):
-            self.scope.declare(name)
-            return f"DynamicType {name} = {rhs_code};"
-
-        # Reassign existing variable
-        return f"{name} = {rhs_code};"
+            # Reassign existing variable
+            return f"{name} = {rhs_code};"
+        
+        # Handle subscript assignment (e.g., arr[i] = value)
+        elif isinstance(node.target, Subscript):
+            lhs_code = self.expr.visit(node.target)
+            return f"{lhs_code} = {rhs_code};"
+        
+        # Invalid assignment target
+        else:
+            raise NotImplementedError(f"Assignment to {type(node.target).__name__} is not supported")
 
     # ---------- Expression Statements ----------
     def visit_ExprStmt(self, node: ExprStmt) -> str:
@@ -105,6 +110,10 @@ class BasicStatementGenerator:
         Returns:
             str: C++ expression code terminated with semicolon.
         """
+        # Special handling for import statements - ignore them
+        if hasattr(node.value, 'name') and node.value.name in ['import', 'sys']:
+            return ""  # Skip import/sys identifier statements
+        
         code = self.expr.visit(node.value)
         return f"{code};"
 

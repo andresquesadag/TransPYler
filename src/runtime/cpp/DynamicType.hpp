@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <set>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -79,6 +80,8 @@ class DynamicType{
     DynamicType(const std::map<std::string, DynamicType> &val) : value(val), type(Type::DICT) {}
 
     DynamicType(const std::unordered_set<DynamicType> &val) : value(val), type(Type::SET) {}
+    
+    DynamicType(const std::set<DynamicType> &val) : value(val), type(Type::SET) {}
 
     // Type checking
     /**
@@ -112,7 +115,7 @@ class DynamicType{
     DynamicType pow(const DynamicType &exponent) const;
     DynamicType floor_div(const DynamicType &other) const;
 
-    // Comparison operators
+    // Comparison operators (needed for std::set<DynamicType>)
     bool operator==(const DynamicType &other) const;
     bool operator!=(const DynamicType &other) const;
     bool operator<(const DynamicType &other) const;
@@ -172,11 +175,31 @@ class DynamicType{
      * @throws std::runtime_error if not a list or indices are out of range
      */
     DynamicType sublist(size_t start, size_t end, size_t step);
+    
+    // DynamicType wrapper overloads for sublist
+    DynamicType sublist(const DynamicType& start, const DynamicType& end) {
+      return sublist(static_cast<size_t>(start.toInt()), static_cast<size_t>(end.toInt()));
+    }
+    DynamicType sublist(const DynamicType& start, const DynamicType& end, const DynamicType& step) {
+      return sublist(static_cast<size_t>(start.toInt()), static_cast<size_t>(end.toInt()), static_cast<size_t>(step.toInt()));
+    }
 
     // Dict methods
     void remove(const std::string &key);
-    // Dict, List common methods
+    void set(const std::string &key, const DynamicType &value);  // Dict set method
+    void set(const DynamicType &key, const DynamicType &value) { set(key.toString(), value); } // DynamicType overload
+    DynamicType get(const std::string &key) const;               // Dict get method
+    DynamicType get(const DynamicType &key) const { return get(key.toString()); } // DynamicType overload
+    void removeKey(const std::string &key) { remove(key); }     // Alias for remove
+    void removeKey(const DynamicType &key) { remove(key.toString()); } // DynamicType overload
+    
+    // List methods
+    void removeAt(size_t index) { remove(index); }              // Alias for remove
+    void removeAt(const DynamicType &index) { remove(static_cast<size_t>(index.toInt())); } // DynamicType overload
+    
+    // Dict, List common methods  
     bool contains(const DynamicType& key) const;
+    
     // Set operations
     void add(const DynamicType &item);
     void remove(const DynamicType &item);

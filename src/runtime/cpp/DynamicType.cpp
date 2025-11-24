@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Andres Quesada, David Obando, Randy Aguero
 #include "DynamicType.hpp"
+#include <algorithm>
 
 
 namespace std {
@@ -162,6 +163,18 @@ bool DynamicType::toBool() const {
 }
 
 DynamicType DynamicType::operator+(const DynamicType &other) const {
+  // List concatenation
+  if (type == Type::LIST && other.type == Type::LIST) {
+    auto left = std::any_cast<std::vector<DynamicType>>(value);
+    auto right = std::any_cast<std::vector<DynamicType>>(other.value);
+    
+    // Concatenate vectors
+    std::vector<DynamicType> result = left;
+    result.insert(result.end(), right.begin(), right.end());
+    
+    return DynamicType(result);
+  }
+
   // String concat
   if (type == Type::STRING || other.type == Type::STRING) {
     return DynamicType(toString() + other.toString());
@@ -250,6 +263,21 @@ bool DynamicType::operator==(const DynamicType &other) const {
         return toString() == other.toString();
       case Type::BOOL:
         return toBool() == other.toBool();
+      case Type::LIST: {
+        const auto &list1 = std::any_cast<const std::vector<DynamicType>&>(value);
+        const auto &list2 = std::any_cast<const std::vector<DynamicType>&>(other.value);
+        return list1 == list2;
+      }
+      case Type::DICT: {
+        const auto &dict1 = std::any_cast<const std::map<std::string, DynamicType>&>(value);
+        const auto &dict2 = std::any_cast<const std::map<std::string, DynamicType>&>(other.value);
+        return dict1 == dict2;
+      }
+      case Type::SET: {
+        const auto &set1 = std::any_cast<const std::set<DynamicType>&>(value);
+        const auto &set2 = std::any_cast<const std::set<DynamicType>&>(other.value);
+        return set1 == set2;
+      }
       default:
         return false;
     }
@@ -260,13 +288,27 @@ bool DynamicType::operator!=(const DynamicType &other) const {
 }
 
 bool DynamicType::operator<(const DynamicType &other) const {
+  // First compare by type (for mixed type sets)
+  if (type != other.type) {
+    return static_cast<int>(type) < static_cast<int>(other.type);
+  }
+  
+  // Same types - compare values
   if (isNumeric() && other.isNumeric()) {
     return toDouble() < other.toDouble();
   }
   if (type == Type::STRING && other.type == Type::STRING) {
     return toString() < other.toString();
   }
-  throw std::runtime_error("Unsupported operand types for <");
+  if (type == Type::BOOL && other.type == Type::BOOL) {
+    return toBool() < other.toBool();
+  }
+  if (type == Type::NONE && other.type == Type::NONE) {
+    return false;  // None == None
+  }
+  
+  // For complex types, compare string representations as fallback
+  return toString() < other.toString();
 }
 
 bool DynamicType::operator<=(const DynamicType &other) const {
@@ -390,14 +432,15 @@ const std::map<std::string, DynamicType>& DynamicType::getDict() const {
   }
 }
 
+// Set access methods
 std::unordered_set<DynamicType>& DynamicType::getSet() {
-  if(type != Type::SET){
+  if(type != Type::SET) {
     throw std::runtime_error("Type is not a set");
   }
   try{
     return std::any_cast<std::unordered_set<DynamicType>&>(value);
   } catch (const std::bad_any_cast&) {
-    throw std::runtime_error("Stored value is not an enum Type (getSet)");
+    throw std::runtime_error("Stored value is not a set (getSet)");
   }
 }
 
@@ -408,119 +451,149 @@ const std::unordered_set<DynamicType>& DynamicType::getSet() const {
   try{
     return std::any_cast<const std::unordered_set<DynamicType>&>(value);
   } catch (const std::bad_any_cast&) {
-    throw std::runtime_error("Stored value is not an enum Type (getSet const)");
+    throw std::runtime_error("Stored value is not a set (getSet const)");
   }
 }
 
-void DynamicType::append(const DynamicType& item) {
-    if (type != Type::LIST) {
-      throw std::runtime_error("append() only works on lists");
-    }
-    getList().push_back(item);
-}
-
-void DynamicType::remove(size_t index) {
-  if (type != Type::LIST) {
-    throw std::runtime_error("remove() only works on lists");
-  }
-  std::vector<DynamicType> &list = getList();
-  if (index >= list.size()) {
-    throw std::runtime_error("Index out of range");
-  }
-  list.erase(list.begin() + index);
-}
-
+// List sublist methods
 DynamicType DynamicType::sublist(size_t start, size_t end) {
-  if (type != Type::LIST) {
-    throw std::runtime_error("sublist() only works on lists");
+  if(type != Type::LIST) {
+    throw std::runtime_error("Type is not a list");
   }
-  const std::vector<DynamicType> &list = getList();
-  if (start > end || end > list.size()) {
-    throw std::runtime_error("Invalid start or end indices for sublist");
+  
+  auto& list = getList();
+  if(start > list.size() || end > list.size() || start > end) {
+    throw std::runtime_error("Sublist indices out of range");
   }
-  std::vector<DynamicType> result;
-  for (size_t i = start; i < end; ++i) {
-    result.push_back(list[i]);
+  
+  std::vector<DynamicType> newList;
+  for(size_t i = start; i < end; ++i) {
+    newList.push_back(list[i]);
   }
-  return DynamicType(result);
+  
+  return DynamicType(newList);
 }
 
 DynamicType DynamicType::sublist(size_t start, size_t end, size_t step) {
-  if (type != Type::LIST) {
-    throw std::runtime_error("sublist() only works on lists");
-  }
-  if (step == 0) {
-    throw std::runtime_error("Step must be greater than zero");
-  }
-  const std::vector<DynamicType> &list = getList();
-  if (start > end || end > list.size()) {
-    throw std::runtime_error("Invalid start or end indices for sublist");
-  }
-  std::vector<DynamicType> result;
-  for (size_t i = start; i < end; i += step) {
-    result.push_back(list[i]);
-  }
-  return DynamicType(result);
-}
-
-void DynamicType::remove(const std::string& key) {
-  if (type != Type::DICT) {
-    throw std::runtime_error("remove() with string key only works on dicts");
+  if(type != Type::LIST) {
+    throw std::runtime_error("Type is not a list");
   }
   
-  try {
-    std::map<std::string, DynamicType>& dict = getDict();
-    auto dictIterator = dict.find(key);
-    if (dictIterator == dict.end()) {
-      throw std::runtime_error("KeyError: '" + key + "'");
-    }
-    dict.erase(dictIterator);
-  } catch (const std::bad_any_cast&) {
-    throw std::runtime_error("Internal error: stored value is not a dict (remove)");
-  }
-}
-
-bool DynamicType::contains(const DynamicType& key) const {
-  if (type == Type::DICT) {
-    const std::map<std::string, DynamicType>& dict = getDict();
-    std::string key_str = key.toString();
-    return dict.find(key_str) != dict.end();
-  } else if (type == Type::LIST) {
-    const std::vector<DynamicType>& list = getList();
-    for (const DynamicType& item : list) {
-      if (item == key) {
-        return true;
-      }
-    }
-    return false;
-  } else if (type == Type::STRING) {
-    std::string str = toString();
-    std::string substr = key.toString();
-    return str.find(substr) != std::string::npos;
-  } else if (type == Type::SET) {
-    const std::unordered_set<DynamicType>& set = getSet();
-    return set.find(key) != set.end();
+  if(step == 0) {
+    throw std::runtime_error("Step cannot be zero");
   }
   
-  throw std::runtime_error("'in' operator not supported for this type");
+  auto& list = getList();
+  if(start > list.size() || end > list.size()) {
+    throw std::runtime_error("Sublist indices out of range");
+  }
+  
+  std::vector<DynamicType> newList;
+  for(size_t i = start; i < end; i += step) {
+    newList.push_back(list[i]);
+  }
+  
+  return DynamicType(newList);
 }
 
-void DynamicType::add(const DynamicType& item) {
-  if (type != Type::SET) {
-    throw std::runtime_error("add() only works on sets");
+// Set add method
+void DynamicType::add(const DynamicType &item) {
+  if(type != Type::SET) {
+    throw std::runtime_error("add() can only be called on sets");
   }
-  std::unordered_set<DynamicType>& set = getSet();
+  
+  auto& set = getSet();
   set.insert(item);
 }
 
+// List append method
+void DynamicType::append(const DynamicType &item) {
+  if(type != Type::LIST) {
+    throw std::runtime_error("append() can only be called on lists");
+  }
+  
+  auto& list = getList();
+  list.push_back(item);
+}
+
+// List remove method (by index)
+void DynamicType::remove(size_t index) {
+  if(type != Type::LIST) {
+    throw std::runtime_error("remove() by index can only be called on lists");
+  }
+  
+  auto& list = getList();
+  if(index >= list.size()) {
+    throw std::runtime_error("List index out of range");
+  }
+  
+  list.erase(list.begin() + index);
+}
+
+// Dictionary remove method (by key)
+void DynamicType::remove(const std::string &key) {
+  if(type != Type::DICT) {
+    throw std::runtime_error("remove() by key can only be called on dictionaries");
+  }
+  
+  auto& dict = getDict();
+  dict.erase(key);
+}
+
+// Set remove method (by item)
 void DynamicType::remove(const DynamicType &item) {
-  if (type != Type::SET) {
-    throw std::runtime_error("remove() only works on sets");
+  if(type != Type::SET) {
+    throw std::runtime_error("remove() by item can only be called on sets");
   }
-  std::unordered_set<DynamicType>& set = getSet();
-  auto setIterator = set.find(item);
-  if (setIterator == set.end()) {
-    throw std::runtime_error("KeyError: item not in set");
+  
+  auto& set = getSet();
+  set.erase(item);
+}
+
+// Contains method (for dict, list, set)
+bool DynamicType::contains(const DynamicType& key) const {
+  if(type == Type::DICT) {
+    if(!key.isString()) {
+      return false; // Dict keys must be strings
+    }
+    const auto& dict = getDict();
+    return dict.find(key.toString()) != dict.end();
   }
-  set.erase(setIterator);
+  else if(type == Type::SET) {
+    const auto& set = getSet();
+    return set.find(key) != set.end();
+  }
+  else if(type == Type::LIST) {
+    const auto& list = getList();
+    return std::find(list.begin(), list.end(), key) != list.end();
+  }
+  else {
+    throw std::runtime_error("contains() can only be called on dict, set, or list");
+  }
+}
+
+// Dictionary set method
+void DynamicType::set(const std::string &key, const DynamicType &value) {
+  if(type != Type::DICT) {
+    throw std::runtime_error("set() can only be called on dictionaries");
+  }
+  
+  auto& dict = getDict();
+  dict[key] = value;
+}
+
+// Dictionary get method
+DynamicType DynamicType::get(const std::string &key) const {
+  if(type != Type::DICT) {
+    throw std::runtime_error("get() can only be called on dictionaries");
+  }
+  
+  const auto& dict = getDict();
+  auto it = dict.find(key);
+  if(it != dict.end()) {
+    return it->second;
+  }
+  else {
+    throw std::runtime_error("Key not found in dictionary");
+  }
 }

@@ -54,4 +54,9 @@ DynamicType input();
 DynamicType set();
 DynamicType set(const DynamicType& iterable);
 
+// Data structure helper functions
+DynamicType sublist(const DynamicType& list, const DynamicType& start, const DynamicType& end);
+
+
+
 #endif // BUILTINS_HPP

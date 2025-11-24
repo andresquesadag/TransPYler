@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Andres Quesada, David Obando, Randy Aguero
 #include "builtins.hpp"
 #include <algorithm>
+#include <cstdlib>
 
 
 // print() template implementation moved to builtins.hpp
@@ -161,3 +162,20 @@ DynamicType set(const DynamicType& iterable) {
     
     return DynamicType(result);
 }
+
+// Data structure helper functions
+DynamicType sublist(const DynamicType& list, const DynamicType& start, const DynamicType& end) {
+    if (!list.isList()) {
+        throw std::runtime_error("sublist() can only be called on lists");
+    }
+    
+    // Convert DynamicType arguments to size_t
+    size_t startIdx = static_cast<size_t>(start.toInt());
+    size_t endIdx = static_cast<size_t>(end.toInt());
+    
+    // Create a non-const copy to call sublist
+    DynamicType listCopy = list;
+    return listCopy.sublist(startIdx, endIdx);
+}
+
+

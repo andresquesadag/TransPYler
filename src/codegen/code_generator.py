@@ -119,7 +119,14 @@ class CodeGenerator:
             n for n in module.body if not isinstance(n, FunctionDef)
         ]
 
+        # Check if we should generate argument-based version
+        self.should_use_args = self._should_generate_with_args(globals_)
+
         parts: List[str] = [CPP_PREAMBLE]
+        
+        # Add argument parsing headers if needed
+        if self.should_use_args:
+            parts[0] = '#include "builtins.hpp"\n#include <cstdlib>\nusing namespace std;'
 
         # Generate functions first
         for f in fun_defs:
@@ -127,24 +134,102 @@ class CodeGenerator:
             parts.append("")
 
         # Generate main() function with global statements
-        parts.append("int main() {")
+        if self.should_use_args:
+            parts.append("int main(int argc, char* argv[]) {")
+            parts.append("  if (argc != 2) {")
+            parts.append('    cout << "Usage: " << argv[0] << " <n>" << endl;')
+            parts.append("    return 1;")
+            parts.append("  }")
+            parts.append("  int n = atoi(argv[1]);")
+            parts.append("")
+        else:
+            parts.append("int main() {")
         self.scope.push()
+        
+        # Check if there's a main function
+        has_main_function = any(f.name == "main" for f in fun_defs)
+        main_call_added = False
+        
+        # Process global statements 
         for stmt in globals_:
-            parts.extend(self._emit_cpp_top_stmt(stmt))
+            stmt_lines = self._emit_cpp_top_stmt(stmt)
+            parts.extend(stmt_lines)
+            
+            # Check if any of the generated lines contains a call to _fn_main()
+            for line in stmt_lines:
+                if "_fn_main()" in line:
+                    main_call_added = True
+            
+        # If there's a main function but no call was added, add one
+        if has_main_function and not main_call_added:
+            parts.append("  _fn_main();")
+        
         self.scope.pop()
         parts.append("  return 0;")
         parts.append("}")
 
         return "\n".join(parts)
     
+    def _should_generate_with_args(self, globals_: List[AstNode]) -> bool:
+        """
+        Check if the code contains patterns that should be converted to argument-based execution.
+        Look for loops over hardcoded arrays of values.
+        """
+        from src.core import For, Assign
+        
+        for stmt in globals_:
+            # Check for assignment of arrays with multiple values
+            if isinstance(stmt, Assign):
+                # Convert to string to analyze pattern
+                assign_code = str(stmt)
+                if any(pattern in assign_code.lower() for pattern in [
+                    'values = [', 'tamanos = [', 'sizes = [', 'valores = ['
+                ]):
+                    # Check if it has multiple values (more than 1 element)
+                    if assign_code.count(',') > 0:  # Multiple elements
+                        return True
+            
+            # Check for For loops that might be iterating over value arrays
+            if isinstance(stmt, For):
+                # Check if iterating over a values/sizes array
+                for_code = str(stmt)
+                if any(pattern in for_code.lower() for pattern in [
+                    'for number in values', 'for n in sizes', 'for numero in valores'
+                ]):
+                    return True
+        
+        return False
+    
     def _emit_cpp_top_stmt(self, stmt: AstNode) -> List[str]:
         """Emit C++ code for top-level statements in main()."""
         # Basic statements (Persona 2)
         if isinstance(stmt, (Assign, ExprStmt, Return)):
-            return ["  " + self.basic_stmt_generator.visit(stmt)]
+            code = self.basic_stmt_generator.visit(stmt)
+            if code.strip():  # Only add non-empty code
+                # If using args mode, skip hardcoded array assignments
+                if self.should_use_args and self._is_values_assignment(stmt):
+                    return []  # Skip the values array assignment
+                return ["  " + code]
+            else:
+                return []  # Skip empty code (like import statements)
         # Control flow (Persona 3)  
         if isinstance(stmt, (If, While, For, Block)):
+            # Generate code and check if it contains __name__ == "__main__"
             block_code = self.statement_visitor.visit(stmt)
+            
+            # Skip if __name__ == "__main__" blocks
+            if '__name__' in block_code and '__main__' in block_code:
+                return []  # Skip this if statement
+            
+            # Transform for loops if using args mode
+            if self.should_use_args and isinstance(stmt, For):
+                transformed_code = self._transform_for_loop_to_single_execution(stmt)
+                if transformed_code:
+                    return [
+                        "  " + line if line.strip() else line
+                        for line in transformed_code.splitlines()
+                    ]
+            
             return [
                 "  " + line if line.strip() else line
                 for line in block_code.splitlines()

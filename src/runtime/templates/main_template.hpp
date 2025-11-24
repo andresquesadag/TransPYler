@@ -1,1 +1,0 @@
-// TODO(Randy): Create this template for the C++ int main(){... return;} function.

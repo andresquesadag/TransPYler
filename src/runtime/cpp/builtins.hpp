@@ -50,4 +50,10 @@ DynamicType type(const DynamicType& value);
 DynamicType input(const std::string& prompt);
 DynamicType input();
 
+// Data structure helper functions
+DynamicType sublist(const DynamicType& list, const DynamicType& start, const DynamicType& end);
+
+// Set constructor
+DynamicType set_();
+
 #endif // BUILTINS_HPP

@@ -44,7 +44,7 @@ _BIN_OP_CPP = {
 
 
 def _escape_cpp_string(s: str) -> str:
-    return s.replace("\\", r"\\").replace('"', r"\"")
+    return s.replace("\\", r"\\").replace('"', r"\"").replace('\n', r"\n").replace('\r', r"\r").replace('\t', r"\t")
 
 
 class ExprGenerator:
@@ -83,6 +83,9 @@ class ExprGenerator:
     # ---------- Identifiers ----------
     def visit_Identifier(self, node: Identifier) -> str:
         name = node.name
+        # Handle special Python variables
+        if name == "__name__":
+            return 'DynamicType(std::string("__main__"))'
         # Note: We're relaxing scope checking as loop variables and function parameters
         # are handled specially and may not be in the main scope when checked
         return name
@@ -90,7 +93,7 @@ class ExprGenerator:
     # ---------- Unary Expressions  ----------
     def visit_UnaryExpr(self, node: UnaryExpr) -> str:
         rhs = self.visit(node.operand)
-        if node.op == "-":
+        if node.op in ("-", "MINUS"):
             return f"(DynamicType(0) - ({rhs}))"
         if node.op in ("not", "!", "NOT"):
             return f"(!({rhs}))"
@@ -135,7 +138,8 @@ class ExprGenerator:
         if isinstance(node.callee, Identifier):
             callee = node.callee.name
         elif isinstance(node.callee, Attribute):
-            raise NotImplementedError("Method calls are not supported by CallExpr")
+            # Handle method calls like list.append(item), dict.get(key), etc.
+            return self._handle_method_call(node.callee, node.args)
         else:
             raise NotImplementedError("callee type not supported in CallExpr")
 
@@ -153,6 +157,7 @@ class ExprGenerator:
             "sum": "sum",
             "type": "type",
             "input": "input",
+            "set": "set_",
         }
         
         # Use DynamicType overloads for all builtin functions including range()
@@ -201,10 +206,10 @@ class ExprGenerator:
         """Delegate set expressions to DataStructureGenerator."""
         if self.data_structure_generator:
             return self.data_structure_generator.visit(node)
-        # Fallback implementation (represent as vector)
+        # Fallback implementation (use proper set)
         elements = [self.visit(e) for e in node.elements]
         elements_str = ', '.join(elements)
-        return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
+        return f"DynamicType(std::set<DynamicType>{{{elements_str}}})"
 
     # ---------- Subscript expressions (indexing and slicing) ----------
     def visit_Subscript(self, node) -> str:
@@ -215,3 +220,66 @@ class ExprGenerator:
         # Use DynamicType operator[] which automatically handles conversion
         # from DynamicType to appropriate index type (size_t for numbers, string for strings)
         return f"({obj_code})[{index_code}]"
+
+    # ---------- Attribute access and method calls ----------
+    def visit_Attribute(self, node: Attribute) -> str:
+        """Handle attribute access like obj.attr."""
+        obj_code = self.visit(node.value)
+        # For simple attribute access (not method calls)
+        # This might be used for accessing properties - not commonly used in our transpiler
+        return f"({obj_code}).{node.attr}"
+    
+    def _handle_method_call(self, callee: Attribute, args) -> str:
+        """Handle method calls like obj.method(args)."""
+        obj_code = self.visit(callee.value)
+        method_name = callee.attr
+        args_code = [self.visit(a) for a in args]
+        
+        # Map Python data structure methods to DynamicType C++ methods
+        data_structure_methods = {
+            # List methods
+            "append": {"params": 1, "cpp_method": "append"},
+            "pop": {"params": 0, "cpp_method": "removeAt", "default_args": ["DynamicType(-1)"]},  # pop() -> removeAt(-1)
+            "remove": {"params": 1, "cpp_method": "remove"},  # For sets
+            
+            # Dict methods  
+            "get": {"params": 1, "cpp_method": "get"},
+            "pop": {"params": 1, "cpp_method": "removeKey"},  # dict.pop(key) -> removeKey(key)
+            
+            # Set methods
+            "add": {"params": 1, "cpp_method": "add"},
+            "discard": {"params": 1, "cpp_method": "remove"},  # set.discard -> remove (but should not throw)
+            "remove": {"params": 1, "cpp_method": "remove"},   # set.remove -> remove (throws if not found)
+        }
+        
+        if method_name in data_structure_methods:
+            method_info = data_structure_methods[method_name]
+            cpp_method = method_info["cpp_method"]
+            
+            # Handle special cases
+            if method_name == "pop" and len(args) == 0:
+                # list.pop() without args -> removeAt(-1)
+                return f"({obj_code}).{cpp_method}(DynamicType(-1))"
+            elif method_name in ["sublist", "slice"]:
+                # Handle slicing - expecting 2 args (start, end)
+                if len(args_code) == 2:
+                    return f"({obj_code}).sublist({args_code[0]}, {args_code[1]})"
+            
+            # Standard method call
+            args_str = ', '.join(args_code)
+            return f"({obj_code}).{cpp_method}({args_str})"
+        
+        # Special builtin methods that don't map directly to DynamicType methods
+        if method_name == "keys":
+            # For dict.keys() - would need implementation
+            raise NotImplementedError("dict.keys() method not yet supported")
+        elif method_name == "values":
+            # For dict.values() - would need implementation  
+            raise NotImplementedError("dict.values() method not yet supported")
+        elif method_name == "items":
+            # For dict.items() - would need implementation
+            raise NotImplementedError("dict.items() method not yet supported")
+        
+        # Fallback for unknown methods
+        args_str = ', '.join(args_code)
+        return f"({obj_code}).{method_name}({args_str})"

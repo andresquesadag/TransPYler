@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Andres Quesada, David Obando, Randy Aguero
 #include "builtins.hpp"
 #include <algorithm>
+#include <cstdlib>
 
 
 // print() template implementation moved to builtins.hpp
@@ -11,6 +12,9 @@ DynamicType len(const DynamicType &obj) {
     }
     if (obj.isDict()) {
         return DynamicType(static_cast<int>(obj.getDict().size()));
+    }
+    if (obj.isSet()) {
+        return DynamicType(static_cast<int>(obj.getSet().size()));
     }
     if (obj.isString()) {
         return DynamicType(static_cast<int>(obj.toString().length()));
@@ -120,6 +124,7 @@ DynamicType type(const DynamicType& value) {
         case DynamicType::Type::BOOL:   return DynamicType("<class 'bool'>");
         case DynamicType::Type::LIST:   return DynamicType("<class 'list'>");
         case DynamicType::Type::DICT:   return DynamicType("<class 'dict'>");
+        case DynamicType::Type::SET:    return DynamicType("<class 'set'>");
         default: return DynamicType("<class 'unknown'>");
     }
 }
@@ -135,4 +140,17 @@ DynamicType input(const std::string& prompt) {
 
 DynamicType input() {
     return input("");
+}
+
+// Data structure helper functions
+DynamicType sublist(const DynamicType& list, const DynamicType& start, const DynamicType& end) {
+    if (!list.isList()) {
+        throw std::runtime_error("sublist() can only be called on lists");
+    }
+    return list.sublist(start, end);
+}
+
+// Set constructor
+DynamicType set_() {
+    return DynamicType(std::set<DynamicType>());
 }

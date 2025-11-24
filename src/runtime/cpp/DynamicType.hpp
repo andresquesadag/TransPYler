@@ -3,9 +3,9 @@
 #define DYNAMIC_TYPE_HPP
 
 #include <any>
-#include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <memory>
 #include <stdexcept>
 #include <iostream>
@@ -26,7 +26,8 @@ class DynamicType{
       STRING,
       BOOL,
       LIST,
-      DICT
+      DICT,
+      SET
     };
 
   private:
@@ -50,6 +51,8 @@ class DynamicType{
     DynamicType(const std::vector<DynamicType> &val) : value(val), type(Type::LIST) {}
 
     DynamicType(const std::map<std::string, DynamicType> &val) : value(val), type(Type::DICT) {}
+    
+    DynamicType(const std::set<DynamicType> &val) : value(val), type(Type::SET) {}
 
     // Type checking
     /**
@@ -65,6 +68,7 @@ class DynamicType{
     bool isBool() const { return type == Type::BOOL; }
     bool isList() const { return type == Type::LIST; }
     bool isDict() const { return type == Type::DICT; }
+    bool isSet() const { return type == Type::SET; }
     bool isNumeric() const { return type == Type::INT || type == Type::DOUBLE; }
 
     // Type conversion helpers
@@ -82,7 +86,7 @@ class DynamicType{
     DynamicType pow(const DynamicType &exponent) const;
     DynamicType floor_div(const DynamicType &other) const;
 
-    // Comparison operators
+    // Comparison operators (needed for std::set<DynamicType>)
     bool operator==(const DynamicType &other) const;
     bool operator!=(const DynamicType &other) const;
     bool operator<(const DynamicType &other) const;
@@ -114,9 +118,28 @@ class DynamicType{
   // Non-const accessors (mutation allowed)
   std::vector<DynamicType>& getList();
   std::map<std::string, DynamicType>& getDict();
+  std::set<DynamicType>& getSet();
   // Const accessors (read-only)
   const std::vector<DynamicType>& getList() const;
   const std::map<std::string, DynamicType>& getDict() const;
+  const std::set<DynamicType>& getSet() const;
+
+  // === DATA STRUCTURE MANIPULATION METHODS ===
+  
+  // List operations
+  void append(const DynamicType& item);              // list.append(item)
+  DynamicType sublist(const DynamicType& start, const DynamicType& end) const; // list[start:end] 
+  void removeAt(const DynamicType& index);           // del list[index] / list.pop(index)
+  
+  // Dict operations  
+  void set(const DynamicType& key, const DynamicType& value);  // dict[key] = value
+  DynamicType get(const DynamicType& key) const;               // dict[key] or dict.get(key)
+  void removeKey(const DynamicType& key);                      // del dict[key]
+  
+  // Set operations
+  void add(const DynamicType& item);                 // set.add(item)
+  DynamicType contains(const DynamicType& item) const; // item in set
+  void remove(const DynamicType& item);              // set.remove(item)
 };
 
 #endif // DYNAMIC_TYPE_HPP

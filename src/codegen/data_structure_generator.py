@@ -154,12 +154,11 @@ class DataStructureGenerator:
 
     def visit_SetExpr_cpp(self, node) -> str:
         """
-        Generate C++ code for a set expression using DynamicType.
-        For now, represent sets as vectors since DynamicType doesn't have native set support.
+        Generate C++ code for a set expression using DynamicType set.
         Args:
                 node (SetExpr): AST node for a set.
         Returns:
-                str: C++ DynamicType code representing a set.
+                str: C++ DynamicType set code.
         """
         elements = []
         for e in node.elements:
@@ -168,9 +167,9 @@ class DataStructureGenerator:
             else:
                 elements.append(self.visit(e))
         
-        # For now, represent sets as vectors (would need unique elements logic)
+        # Use std::set<DynamicType> for proper set semantics
         elements_str = ', '.join(elements)
-        return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
+        return f"DynamicType(std::set<DynamicType>{{{elements_str}}})"
 
     def _deduce_cpp_set_type(self, node):
         """

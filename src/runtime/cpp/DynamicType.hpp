@@ -3,20 +3,47 @@
 #define DYNAMIC_TYPE_HPP
 
 #include <any>
-#include <vector>
+#include <cmath>
+#include <functional>
+#include <iostream>
 #include <map>
 #include <set>
 #include <memory>
 #include <stdexcept>
-#include <iostream>
+#include <string>
 #include <sstream>
-#include <cmath>
+#include <unordered_set>
+#include <vector>
 
 /**
  * DynamicType: Emulates Python's dynamic typing in C++
  * Supports: int, double, string, bool, None (nullptr)
- * and collections: list, dict
+ * and collections: list, dict, set
  */
+class DynamicType;
+
+/**
+ * Hash function specialization for DynamicType
+ * 
+ * This allows DynamicType objects to be used in hash-based containers
+ * like std::unordered_set<DynamicType> and std::unordered_map<DynamicType, T>
+ * 
+ * The hash is computed based on the underlying value type:
+ * - INT: uses std::hash<int>
+ * - DOUBLE: uses std::hash<double>
+ * - STRING: uses std::hash<std::string>
+ * - BOOL: uses std::hash<bool>
+ * - NONE: returns 0
+ * - Complex types (LIST, DICT, SET): uses hash of their string representation
+ */
+namespace std {
+    template<>
+    struct hash<DynamicType> {
+        size_t operator()(const DynamicType& value) const;
+    };
+}
+
+
 class DynamicType{
   public:
     enum class Type {
@@ -51,6 +78,8 @@ class DynamicType{
     DynamicType(const std::vector<DynamicType> &val) : value(val), type(Type::LIST) {}
 
     DynamicType(const std::map<std::string, DynamicType> &val) : value(val), type(Type::DICT) {}
+
+    DynamicType(const std::unordered_set<DynamicType> &val) : value(val), type(Type::SET) {}
     
     DynamicType(const std::set<DynamicType> &val) : value(val), type(Type::SET) {}
 
@@ -115,31 +144,45 @@ class DynamicType{
     }
 
     // Collection getters
-  // Non-const accessors (mutation allowed)
-  std::vector<DynamicType>& getList();
-  std::map<std::string, DynamicType>& getDict();
-  std::set<DynamicType>& getSet();
-  // Const accessors (read-only)
-  const std::vector<DynamicType>& getList() const;
-  const std::map<std::string, DynamicType>& getDict() const;
-  const std::set<DynamicType>& getSet() const;
+    // Non-const accessors (mutation allowed)
+    std::vector<DynamicType>& getList();
+    std::map<std::string, DynamicType>& getDict();
+    std::unordered_set<DynamicType>& getSet();
+    // Const accessors (read-only)
+    const std::vector<DynamicType>& getList() const;
+    const std::map<std::string, DynamicType>& getDict() const;
+    const std::unordered_set<DynamicType>& getSet() const;
 
-  // === DATA STRUCTURE MANIPULATION METHODS ===
-  
-  // List operations
-  void append(const DynamicType& item);              // list.append(item)
-  DynamicType sublist(const DynamicType& start, const DynamicType& end) const; // list[start:end] 
-  void removeAt(const DynamicType& index);           // del list[index] / list.pop(index)
-  
-  // Dict operations  
-  void set(const DynamicType& key, const DynamicType& value);  // dict[key] = value
-  DynamicType get(const DynamicType& key) const;               // dict[key] or dict.get(key)
-  void removeKey(const DynamicType& key);                      // del dict[key]
-  
-  // Set operations
-  void add(const DynamicType& item);                 // set.add(item)
-  DynamicType contains(const DynamicType& item) const; // item in set
-  void remove(const DynamicType& item);              // set.remove(item)
+    // Lists methods
+    void append(const DynamicType &item);
+    void remove(size_t index);
+    /**
+     * Get a sublist from start to end (exclusive).
+     * Python example: lst[2:5]
+     * @param start Starting index
+     * @param end Ending index (exclusive)
+     * @return DynamicType containing the sublist
+     * @throws std::runtime_error if not a list or indices are out of range
+     */
+    DynamicType sublist(size_t start, size_t end);
+    /**
+     * Get a sublist from start to end (exclusive) with a step.
+     * Python example: lst[2:10:2]
+     * @param start Starting index
+     * @param end Ending index (exclusive)
+     * @param step Step size
+     * @return DynamicType containing the sublist
+     * @throws std::runtime_error if not a list or indices are out of range
+     */
+    DynamicType sublist(size_t start, size_t end, size_t step);
+
+    // Dict methods
+    void remove(const std::string &key);
+    // Dict, List common methods
+    bool contains(const DynamicType& key) const;
+    // Set operations
+    void add(const DynamicType &item);
+    void remove(const DynamicType &item);
 };
 
 #endif // DYNAMIC_TYPE_HPP

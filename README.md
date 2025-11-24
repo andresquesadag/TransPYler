@@ -72,7 +72,7 @@ This README serves as a reference for the full transcompiler. Usage examples and
 
 ```bash
 # Clone the repository
-git clone https://github.com/Andres-QG/TransPYler.git
+git clone https://github.com/andresquesadag/TransPYler.git
 cd TransPYler
 
 # (Optional) virtual environment

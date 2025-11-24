@@ -1,6 +1,45 @@
 // Copyright (c) 2025 Andres Quesada, David Obando, Randy Aguero
 #include "DynamicType.hpp"
 
+
+namespace std {
+  size_t hash<DynamicType>::operator()(const DynamicType& value) const {
+    size_t hashValue = 0;
+    
+    switch (value.getType()) {
+      case DynamicType::Type::NONE:
+        // None type always hashes to 0
+        hashValue = 0;
+        break;
+          
+      case DynamicType::Type::INT:
+        hashValue = std::hash<int>{}(value.toInt());
+        break;
+          
+      case DynamicType::Type::DOUBLE:
+        hashValue = std::hash<double>{}(value.toDouble());
+        break;
+          
+      case DynamicType::Type::STRING:
+        hashValue = std::hash<std::string>{}(value.toString());
+        break;
+          
+      case DynamicType::Type::BOOL:
+        hashValue = std::hash<bool>{}(value.toBool());
+        break;
+          
+      default:
+        // For complex types (LIST, DICT, SET), use string representation
+        // Note: This is slower but ensures all types are hashable
+        hashValue = std::hash<std::string>{}(value.toString());
+        break;
+    }
+    
+    return hashValue;
+  }
+}
+
+
 int DynamicType::toInt() const {
   try {
     if (type == Type::INT) {
@@ -78,8 +117,8 @@ std::string DynamicType::toString() const {
       }
       result += "}";
       return result;
-    } else if (type == Type::SET) {
-      const std::set<DynamicType> &set = std::any_cast<const std::set<DynamicType>&>(value);
+    } else if(type == Type::SET) {
+      const std::unordered_set<DynamicType> &set = std::any_cast<const std::unordered_set<DynamicType>&>(value);
       std::string result = "{";
       bool first = true;
       for (const DynamicType &item : set) {
@@ -114,7 +153,7 @@ bool DynamicType::toBool() const {
     } else if (type == Type::DICT) {
       return !std::any_cast<const std::map<std::string, DynamicType>&>(value).empty();
     } else if (type == Type::SET) {
-      return !std::any_cast<const std::set<DynamicType>&>(value).empty();
+      return !std::any_cast<const std::unordered_set<DynamicType>&>(value).empty();
     }
   } catch (const std::bad_any_cast&) {
     throw std::runtime_error("Internal error: stored value type differs from enum Type (toBool)");
@@ -382,7 +421,7 @@ std::map<std::string, DynamicType>& DynamicType::getDict() {
 }
 
 const std::map<std::string, DynamicType>& DynamicType::getDict() const {
-  if(type != Type::DICT){
+  if(type != Type::DICT) {
     throw std::runtime_error("Type is not a dict");
   }
   try{
@@ -390,180 +429,4 @@ const std::map<std::string, DynamicType>& DynamicType::getDict() const {
   } catch (const std::bad_any_cast&) {
     throw std::runtime_error("Stored value is not an enum Type (getDict const)");
   }
-}
-
-std::set<DynamicType>& DynamicType::getSet() {
-  if(type != Type::SET){
-    throw std::runtime_error("Type is not a set");
-  }
-  try{
-    return std::any_cast<std::set<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
-    throw std::runtime_error("Stored value is not an enum Type (getSet)");
-  }
-}
-
-const std::set<DynamicType>& DynamicType::getSet() const {
-  if(type != Type::SET){
-    throw std::runtime_error("Type is not a set");
-  }
-  try{
-    return std::any_cast<const std::set<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
-    throw std::runtime_error("Stored value is not an enum Type (getSet const)");
-  }
-}
-
-// List manipulation methods
-void DynamicType::append(const DynamicType &item) {
-    if (type != Type::LIST) {
-        throw std::runtime_error("Cannot call append on non-list type");
-    }
-    try {
-        std::vector<DynamicType> &list = std::any_cast<std::vector<DynamicType>&>(value);
-        list.push_back(item);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a vector");
-    }
-}
-
-DynamicType DynamicType::sublist(const DynamicType &start, const DynamicType &end) const {
-    if (type != Type::LIST) {
-        throw std::runtime_error("Cannot call sublist on non-list type");
-    }
-    try {
-        const std::vector<DynamicType> &list = std::any_cast<const std::vector<DynamicType>&>(value);
-        int startIdx = start.toInt();
-        int endIdx = end.toInt();
-        
-        // Handle negative indices
-        if (startIdx < 0) startIdx += list.size();
-        if (endIdx < 0) endIdx += list.size();
-        
-        // Bounds checking
-        if (startIdx < 0 || startIdx > (int)list.size()) {
-            throw std::runtime_error("Start index out of range");
-        }
-        if (endIdx < 0 || endIdx > (int)list.size()) {
-            throw std::runtime_error("End index out of range");
-        }
-        if (startIdx > endIdx) {
-            throw std::runtime_error("Start index must be <= end index");
-        }
-        
-        std::vector<DynamicType> subvec(list.begin() + startIdx, list.begin() + endIdx);
-        return DynamicType(subvec);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a vector");
-    }
-}
-
-void DynamicType::removeAt(const DynamicType &index) {
-    if (type != Type::LIST) {
-        throw std::runtime_error("Cannot call removeAt on non-list type");
-    }
-    try {
-        std::vector<DynamicType> &list = std::any_cast<std::vector<DynamicType>&>(value);
-        int idx = index.toInt();
-        
-        // Handle negative indices
-        if (idx < 0) idx += list.size();
-        
-        // Bounds checking
-        if (idx < 0 || idx >= (int)list.size()) {
-            throw std::runtime_error("Index out of range");
-        }
-        
-        list.erase(list.begin() + idx);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a vector");
-    }
-}
-
-// Dictionary manipulation methods
-void DynamicType::set(const DynamicType &key, const DynamicType &val) {
-    if (type != Type::DICT) {
-        throw std::runtime_error("Cannot call set on non-dict type");
-    }
-    try {
-        std::map<std::string, DynamicType> &dict = std::any_cast<std::map<std::string, DynamicType>&>(value);
-        dict[key.toString()] = val;
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a map");
-    }
-}
-
-DynamicType DynamicType::get(const DynamicType &key) const {
-    if (type != Type::DICT) {
-        throw std::runtime_error("Cannot call get on non-dict type");
-    }
-    try {
-        const std::map<std::string, DynamicType> &dict = std::any_cast<const std::map<std::string, DynamicType>&>(value);
-        std::string keyStr = key.toString();
-        auto it = dict.find(keyStr);
-        if (it == dict.end()) {
-            return DynamicType();  // Return None/null when key not found (Python behavior)
-        }
-        return it->second;
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a map");
-    }
-}
-
-void DynamicType::removeKey(const DynamicType &key) {
-    if (type != Type::DICT) {
-        throw std::runtime_error("Cannot call removeKey on non-dict type");
-    }
-    try {
-        std::map<std::string, DynamicType> &dict = std::any_cast<std::map<std::string, DynamicType>&>(value);
-        std::string keyStr = key.toString();
-        auto it = dict.find(keyStr);
-        if (it == dict.end()) {
-            throw std::runtime_error("Key not found: " + keyStr);
-        }
-        dict.erase(it);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a map");
-    }
-}
-
-// Set manipulation methods
-void DynamicType::add(const DynamicType &item) {
-    if (type != Type::SET) {
-        throw std::runtime_error("Cannot call add on non-set type");
-    }
-    try {
-        std::set<DynamicType> &set = std::any_cast<std::set<DynamicType>&>(value);
-        set.insert(item);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a set");
-    }
-}
-
-DynamicType DynamicType::contains(const DynamicType &item) const {
-    if (type != Type::SET) {
-        throw std::runtime_error("Cannot call contains on non-set type");
-    }
-    try {
-        const std::set<DynamicType> &set = std::any_cast<const std::set<DynamicType>&>(value);
-        return DynamicType(set.find(item) != set.end());
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a set");
-    }
-}
-
-void DynamicType::remove(const DynamicType &item) {
-    if (type != Type::SET) {
-        throw std::runtime_error("Cannot call remove on non-set type");
-    }
-    try {
-        std::set<DynamicType> &set = std::any_cast<std::set<DynamicType>&>(value);
-        auto it = set.find(item);
-        if (it == set.end()) {
-            throw std::runtime_error("Item not found in set");
-        }
-        set.erase(it);
-    } catch (const std::bad_any_cast&) {
-        throw std::runtime_error("Internal error: stored value is not a set");
-    }
 }

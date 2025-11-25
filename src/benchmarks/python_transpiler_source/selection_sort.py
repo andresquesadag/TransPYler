@@ -22,11 +22,12 @@ def selection_sort(arr):
     
     return comparisons
 
-# For TransPYler compatibility - no sys imports  
-# The n will be replaced by pattern matching during transpilation
+
 n = 100
+
+array_size = n * 10
 arr = []
-i = n
+i = array_size
 while i > 0:
     arr.append(i)
     i = i - 1

@@ -20,7 +20,8 @@ DynamicType _fn_selection_sort(DynamicType arr) {
 	        j = (j) + (DynamicType(1));
 	    }
 	    DynamicType temp = (arr)[i];
-	    (arr)[i];
+	    /* Assignment statement */;
+	    /* Assignment statement */;
 	    i = (i) + (DynamicType(1));
 	}
 	return comparisons;
@@ -29,8 +30,9 @@ DynamicType _fn_selection_sort(DynamicType arr) {
 int main(int argc, char* argv[]) {
   if (argc != 2) { cout << "Usage: " << argv[0] << " <n>" << endl; return 1; }
   DynamicType n = DynamicType(atoi(argv[1]));
+  DynamicType array_size = (n) * (DynamicType(10));
   DynamicType arr = DynamicType(std::vector<DynamicType>{});
-  DynamicType i = n;
+  DynamicType i = array_size;
   while (DynamicType((i) > (DynamicType(0))).toBool())
   {
       (arr).append(i);

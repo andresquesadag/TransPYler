@@ -239,7 +239,6 @@ class CodeGenerator:
                 return ["  " + code]
             else:
                 return []  # Skip empty code (like import statements)
-        # Control flow (Persona 3)
         if isinstance(stmt, (If, While, For, Block)):
             # Generate code and check if it contains __name__ == "__main__"
             block_code = self.statement_visitor.visit(stmt)

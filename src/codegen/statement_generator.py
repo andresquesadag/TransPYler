@@ -11,9 +11,6 @@ Key Features:
 - Includes helpers for type deduction in C++ for for-each loops and other control flow helpers.
 """
 
-# TODO(any): List and Optional are imported but not used
-from typing import List, Optional
-
 
 class StatementVisitor:
     """
@@ -23,7 +20,9 @@ class StatementVisitor:
     Persona 3 responsibility: Implements control flow translation and helpers.
     """
 
-    def __init__(self, expr_generator=None, scope_manager=None, basic_stmt_generator=None):
+    def __init__(
+        self, expr_generator=None, scope_manager=None, basic_stmt_generator=None
+    ):
         """
         Initializes the StatementVisitor for C++ code generation.
         Args:

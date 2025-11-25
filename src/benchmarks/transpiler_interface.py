@@ -69,7 +69,7 @@ def compile_cpp_manual(cpp_file, executable_path):
     return result
 
 # TODO(any): fast_mode is currently unused
-def generate_all_transpiled_files(fast_mode=False, max_values=None):
+def generate_all_transpiled_files(fast_mode=False, max_values=None, custom_values=None):
     """Phase 1: Generate single transpiled version per algorithm (accepts command line args)"""
     print("\nPhase 1: Generating transpiled files")
     print("-" * 40)
@@ -90,7 +90,7 @@ def generate_all_transpiled_files(fast_mode=False, max_values=None):
         print(f"Processing: {py_file.name}")
 
         algorithm_name = py_file.stem
-        n_values = generate_n_values_for_algorithm(algorithm_name, max_values)
+        n_values = generate_n_values_for_algorithm(algorithm_name, max_values, custom_values)
 
         print(
             f"  Test values: {len(n_values)} points ({min(n_values)} to {max(n_values)})"
@@ -112,11 +112,11 @@ def generate_all_transpiled_files(fast_mode=False, max_values=None):
         # Use special transpiler-compatible Python files
         transpiler_source_dir = PATHS["benchmark_dir"] / "python_transpiler_source"
         if "fibonacci_iterative" in algorithm_name:
-            transpiler_py = transpiler_source_dir / "fibonacci_iterative_transpiler.py"
+            transpiler_py = transpiler_source_dir / "fibonacci_iterative.py"
         elif "fibonacci_recursive" in algorithm_name:
-            transpiler_py = transpiler_source_dir / "fibonacci_recursive_transpiler.py"
+            transpiler_py = transpiler_source_dir / "fibonacci_recursive.py"
         elif "selection_sort" in algorithm_name:
-            transpiler_py = transpiler_source_dir / "selection_sort_transpiler.py"
+            transpiler_py = transpiler_source_dir / "selection_sort.py"
         else:
             transpiler_py = py_file  # Fallback
 

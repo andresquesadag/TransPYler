@@ -11,8 +11,71 @@ from pathlib import Path
 plt.style.use("seaborn-v0_8")
 
 
+def generate_individual_algorithm_charts(csv_files, output_dir):
+    """Generate individual charts for each algorithm"""
+    print("\nGenerating individual algorithm charts...")
+    
+    colors = ["#e74c3c", "#3498db", "#2ecc71"]  # Red, Blue, Green
+    
+    for csv_file in csv_files:
+        df = pd.read_csv(csv_file)
+        algorithm = csv_file.stem.replace("_results", "").replace("_", " ").title()
+        
+        # Create individual execution time chart
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        
+        # Left: Execution Times
+        ax1.plot(df["n"], df["python_ms"], "o-", label="Python Original", 
+                linewidth=3, markersize=8, color=colors[0], alpha=0.8)
+        ax1.plot(df["n"], df["cpp_transpiled_ms"], "s-", label="C++ Transpiled", 
+                linewidth=3, markersize=8, color=colors[1], alpha=0.8)
+        ax1.plot(df["n"], df["cpp_manual_ms"], "^-", label="C++ Manual", 
+                linewidth=3, markersize=8, color=colors[2], alpha=0.8)
+        
+        ax1.set_xlabel("Input Size (n)", fontsize=12, fontweight="bold")
+        ax1.set_ylabel("Execution Time (ms)", fontsize=12, fontweight="bold")
+        ax1.set_title(f"{algorithm} - Execution Times", fontsize=14, fontweight="bold")
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Right: Speedups
+        ax2.plot(df["n"], df["speedup_transpiled"], "s-", label="C++ Transpiled Speedup", 
+                linewidth=3, markersize=8, color=colors[1], alpha=0.8)
+        ax2.plot(df["n"], df["speedup_manual"], "^-", label="C++ Manual Speedup", 
+                linewidth=3, markersize=8, color=colors[2], alpha=0.8)
+        ax2.axhline(y=1, color="red", linestyle="--", alpha=0.7, linewidth=2, label="No Speedup")
+        
+        ax2.set_xlabel("Input Size (n)", fontsize=12, fontweight="bold")
+        ax2.set_ylabel("Speedup vs Python (x)", fontsize=12, fontweight="bold")
+        ax2.set_title(f"{algorithm} - Performance Speedup", fontsize=14, fontweight="bold")
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+        
+        # Add performance summary text
+        avg_trans = df["speedup_transpiled"].mean()
+        avg_manual = df["speedup_manual"].mean()
+        max_trans = df["speedup_transpiled"].max()
+        max_manual = df["speedup_manual"].max()
+        
+        summary_text = f"Avg Speedup - Trans: {avg_trans:.1f}x, Manual: {avg_manual:.1f}x\n"
+        summary_text += f"Max Speedup - Trans: {max_trans:.1f}x, Manual: {max_manual:.1f}x"
+        
+        fig.text(0.5, 0.02, summary_text, ha='center', va='bottom', 
+                fontsize=10, bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
+        
+        plt.tight_layout()
+        plt.subplots_adjust(bottom=0.15)
+        
+        # Save individual chart
+        safe_name = algorithm.lower().replace(" ", "_")
+        chart_file = output_dir / f"{safe_name}_individual.png"
+        plt.savefig(chart_file, dpi=300, bbox_inches="tight")
+        plt.close()
+        print(f"✓ {chart_file.name} - Individual chart for {algorithm}")
+
+
 def visualize_benchmark_results(results_dir="benchmark_results"):
-    """Generate simple comparison charts from CSV files"""
+    """Generate comparison charts from CSV files - both combined and individual"""
 
     results_dir = Path(results_dir)
     output_dir = results_dir / "charts"
@@ -26,7 +89,10 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
 
     print(f"Generating charts from {len(csv_files)} CSV files...")
 
-    # 1. Execution Time Chart
+    # Generate individual algorithm charts
+    generate_individual_algorithm_charts(csv_files, output_dir)
+
+    # 1. Combined Execution Time Chart
     plt.figure(figsize=(14, 8))
 
     colors = [

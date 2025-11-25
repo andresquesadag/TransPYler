@@ -57,6 +57,87 @@ def extract_result_from_output(output_text):
     return "N/A"
 
 
+def verify_program_outputs(generated_files, test_value=10):
+    """Verify that all programs (Python, C++ transpiled, C++ manual) produce the same output"""
+    print("\nPhase 1.5: Verifying program outputs")
+    print("-" * 40)
+    print(f"Testing all programs with n={test_value} to verify correctness:")
+    print()
+    
+    for algorithm_name, files in generated_files.items():
+        print(f"Algorithm: {algorithm_name}")
+        
+        results = {}
+        
+        # Test Python original
+        py_file = files["python_original"]
+        try:
+            result = subprocess.run(
+                [sys.executable, str(py_file), str(test_value)],
+                capture_output=True, text=True, check=False, timeout=10
+            )
+            if result.returncode == 0:
+                output = extract_result_from_output(result.stdout)
+                results['python'] = output
+                print(f"  ✓ Python Original: {output}")
+            else:
+                print(f"  ✗ Python Original: Error - {result.stderr.strip()}")
+                results['python'] = "ERROR"
+        except Exception as e:
+            print(f"  ✗ Python Original: Exception - {e}")
+            results['python'] = "ERROR"
+        
+        # Test C++ transpiled
+        transpiled_exe = files["executable_transpiled"]
+        try:
+            result = subprocess.run(
+                [str(transpiled_exe), str(test_value)],
+                capture_output=True, text=True, check=False, timeout=10
+            )
+            if result.returncode == 0:
+                output = extract_result_from_output(result.stdout)
+                results['transpiled'] = output
+                print(f"  ✓ C++ Transpiled:  {output}")
+            else:
+                print(f"  ✗ C++ Transpiled: Error - {result.stderr.strip()}")
+                results['transpiled'] = "ERROR"
+        except Exception as e:
+            print(f"  ✗ C++ Transpiled: Exception - {e}")
+            results['transpiled'] = "ERROR"
+        
+        # Test C++ manual (if available)
+        manual_exe = files["executable_manual"]
+        if manual_exe:
+            try:
+                result = subprocess.run(
+                    [str(manual_exe), str(test_value)],
+                    capture_output=True, text=True, check=False, timeout=10
+                )
+                if result.returncode == 0:
+                    output = extract_result_from_output(result.stdout)
+                    results['manual'] = output
+                    print(f"  ✓ C++ Manual:      {output}")
+                else:
+                    print(f"  ✗ C++ Manual: Error - {result.stderr.strip()}")
+                    results['manual'] = "ERROR"
+            except Exception as e:
+                print(f"  ✗ C++ Manual: Exception - {e}")
+                results['manual'] = "ERROR"
+        else:
+            print(f"  - C++ Manual: Not available")
+        
+        # Check if all results match
+        unique_results = set(v for v in results.values() if v != "ERROR")
+        if len(unique_results) == 1:
+            print(f"  ✅ All programs produce consistent results: {list(unique_results)[0]}")
+        elif len(unique_results) > 1:
+            print(f"  ⚠️  Inconsistent results detected: {dict(results)}")
+        else:
+            print(f"  ❌ All programs failed")
+        
+        print()
+
+
 def run_performance_tests(generated_files):
     """Phase 2: Execute performance tests with command line arguments"""
     print("\nPhase 2: Running performance tests")

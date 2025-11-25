@@ -34,9 +34,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    vector<int> arr(n);
-    for (int i = 0; i < n; i++) {
-        arr[i] = n - i;
+    // Create array of size n*10 to match Python implementation
+    int array_size = n * 10;
+    vector<int> arr(array_size);
+    for (int i = 0; i < array_size; i++) {
+        arr[i] = array_size - i;
     }
     
     int comparisons = selection_sort(arr);

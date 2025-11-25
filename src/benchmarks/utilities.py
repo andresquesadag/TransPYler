@@ -8,12 +8,41 @@ import re
 from pathlib import Path
 
 
-def generate_n_values_for_algorithm(algorithm_name, max_values=None):
+def generate_n_values_for_algorithm(algorithm_name, max_values=None, custom_values=None):
     """Generate appropriate n values for each algorithm"""
+    # Check if custom values are specified for this algorithm
+    if custom_values:
+        # Clean algorithm name for matching
+        clean_name = algorithm_name.replace("_python", "")
+        
+        # Check for exact match or partial match in custom values
+        for custom_algo, custom_value in custom_values.items():
+            if custom_algo == clean_name or custom_algo in clean_name:
+                print(f"  Using custom range: 1 to {custom_value}")
+                
+                # Generate range based on algorithm type
+                if "fibonacci" in algorithm_name:
+                    return list(range(1, custom_value + 1))
+                elif "selection_sort" in algorithm_name:
+                    # For selection sort, generate reasonable increments up to the value  
+                    # Ensure we start from 1 and go up to custom_value
+                    if custom_value <= 10:
+                        return list(range(1, custom_value + 1))  # 1, 2, 3, ..., 10
+                    elif custom_value <= 20:
+                        return list(range(1, custom_value + 1, 2))  # 1, 3, 5, 7, 9, ..., 19
+                    elif custom_value <= 50:
+                        return list(range(1, custom_value + 1, 5))  # 1, 6, 11, 16, ..., 
+                    else:
+                        step = max(5, custom_value // 10)
+                        return list(range(1, custom_value + 1, step))
+                else:
+                    return list(range(1, custom_value + 1))
+    
+    # Default ranges
     if "fibonacci" in algorithm_name:
         full_range = list(range(1, 51))  # Fibonacci: 1 to 50
     elif "selection_sort" in algorithm_name:
-        full_range = [10, 50, 100, 200, 300, 500, 750, 1000, 1250, 1500]  # Selection Sort: original ranges up to 1500
+        full_range = [1, 5, 10, 20, 30, 50, 75, 100, 150, 200]  # Selection Sort: reasonable sizes starting from 1
     else:
         full_range = list(range(1, 51))  # Default: 1 to 50
     

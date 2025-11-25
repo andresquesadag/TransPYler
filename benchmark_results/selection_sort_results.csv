@@ -1,0 +1,4 @@
+n,result,python_ms,cpp_transpiled_ms,cpp_manual_ms,speedup_transpiled,speedup_manual
+1,45,15.157,1.485,1.365,10.2,11.1
+2,190,15.616,1.548,1.226,10.09,12.74
+3,435,16.806,1.328,1.424,12.66,11.8

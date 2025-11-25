@@ -21,26 +21,23 @@ from src.benchmarks.transpiler_interface import generate_all_transpiled_files
 from src.benchmarks.performance_tester import (
     run_performance_tests,
     generate_performance_summary,
+    verify_program_outputs,
 )
 from src.benchmarks.utilities import cleanup_generated_files
 from src.benchmarks.config import PATHS
 
 
-def run_benchmark(
-    fast_mode=False, no_cleanup=False, max_values=None, generate_charts=True
-):
+def run_benchmark(max_values=None, generate_charts=True, custom_values=None):
     """
     Run complete benchmark with modular architecture:
     1. GENERATE all transpiled files
     2. EXECUTE tests n by n in real time
-    3. CLEAN UP temporary files (optional)
-    4. GENERATE performance summary
-    5. CREATE visualizations and HTML report
+    3. GENERATE performance summary
+    4. CREATE visualizations and HTML report
 
-    fast_mode: If True, uses literal replacement instead of re-transpiling for each n
-    no_cleanup: If True, doesn't delete generated temporary files
     max_values: Limit number of test values per algorithm
     generate_charts: If True, generates visual charts and HTML report
+    custom_values: Dictionary with custom limits for each algorithm
     """
     print("TransPYler Benchmark Runner")
     print("=" * 50)
@@ -48,8 +45,11 @@ def run_benchmark(
     try:
         # Phase 1: Generate all files
         generated_files = generate_all_transpiled_files(
-            fast_mode=fast_mode, max_values=max_values
+            fast_mode=True, max_values=max_values, custom_values=custom_values
         )
+
+        # Phase 1.5: Verify program outputs
+        verify_program_outputs(generated_files)
 
         # Phase 2: Execute performance tests
         run_performance_tests(generated_files)
@@ -57,25 +57,24 @@ def run_benchmark(
         # Phase 3: Generate performance summary
         generate_performance_summary(PATHS["results"])
 
-        # Phase 4: Generate simple visualizations
+        # Phase 4: Generate visualizations and tables
         if generate_charts:
-            print("\nPhase 4: Generating charts")
+            print("\nPhase 4: Generating charts and tables")
             print("-" * 40)
             try:
                 from src.benchmarks.csv_visualizer import visualize_benchmark_results
+                from src.benchmarks.table_generator import generate_benchmark_tables
 
                 visualize_benchmark_results(str(PATHS["results"]))
                 print("✅ Charts generated successfully!")
+                
+                generate_benchmark_tables(str(PATHS["results"]))
+                print("✅ Tables generated successfully!")
             except Exception as e:
-                print(f"⚠️  Chart generation failed: {e}")
+                print(f"⚠️  Visualization generation failed: {e}")
 
-        # Phase 5: Cleanup (optional)
-        if not no_cleanup:
-            cleanup_generated_files(PATHS["transpiled_output"])
-            print("\nCleaning up temporary files...")
-            print("Cleanup completed")
-        else:
-            print("\nPreserving generated files for debugging")
+        # Files are always preserved for debugging
+        print("\nPreserving generated files for debugging")
 
         print("\nBenchmark completed successfully")
 
@@ -88,45 +87,36 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="TransPYler Benchmark Runner - Modular Architecture"
+        description="TransPYler Benchmark Runner"
     )
     parser.add_argument(
-        "-f",
-        "--fast",
-        action="store_true",
-        help="Fast mode: transpile once and use literal replacement (faster)",
-    )
-    parser.add_argument(
-        "--no-cleanup",
-        action="store_true",
-        help="Preserve generated temporary files (useful for debugging)",
-    )
-    parser.add_argument(
-        "--values",
+        "--limits",
+        nargs=3,
         type=int,
-        default=None,
-        help="Number of values to generate per algorithm (e.g., --values 10). Default uses all original values.",
+        metavar=('SEL', 'FIB_REC', 'FIB_ITER'),
+        help="Limits for each algorithm: selection_sort fibonacci_recursive fibonacci_iterative (e.g., --limits 10 25 30)",
     )
     parser.add_argument(
         "--no-charts",
         action="store_true",
-        help="Skip generation of visualization charts and HTML report",
+        help="Skip generation of visualization charts and tables",
     )
 
     args = parser.parse_args()
 
-    if args.fast:
-        print("Fast mode enabled - using literal replacement optimization")
-
-    if args.no_cleanup:
-        print("No cleanup - generated files will be preserved")
-
-    if args.values:
-        print(f"Limited values - generating maximum {args.values} values per algorithm")
+    # Parse limits if provided
+    custom_values = None
+    if args.limits:
+        custom_values = {
+            'selection_sort': args.limits[0],
+            'fibonacci_recursive': args.limits[1], 
+            'fibonacci_iterative': args.limits[2]
+        }
+        print(f"Limits: selection_sort={args.limits[0]}, fibonacci_recursive={args.limits[1]}, fibonacci_iterative={args.limits[2]}")
+    else:
+        print("Using default algorithm ranges")
 
     run_benchmark(
-        fast_mode=args.fast,
-        no_cleanup=args.no_cleanup,
-        max_values=args.values,
         generate_charts=not args.no_charts,
+        custom_values=custom_values,
     )

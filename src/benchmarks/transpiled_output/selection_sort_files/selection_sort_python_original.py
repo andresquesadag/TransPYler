@@ -22,31 +22,19 @@ def selection_sort(arr):
     
     return comparisons
 
-def main():
-    import sys
-    
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <n>")
-        return 1
-    
-    try:
-        n = int(sys.argv[1])
-        if n <= 0:
-            print("Error: n must be positive")
-            return 1
-    except ValueError:
-        print("Error: n must be an integer")
-        return 1
-    
-    arr = []
-    i = n
-    while i > 0:
-        arr.append(i)
-        i = i - 1
-    
-    comparisons = selection_sort(arr)
-    print("result:", comparisons)
-    return 0
 
-if __name__ == "__main__":
-    main()
+import sys
+if len(sys.argv) != 2:
+    print('Usage: python', sys.argv[0], '<n>')
+    sys.exit(1)
+n = int(sys.argv[1])
+
+array_size = n * 10
+arr = []
+i = array_size
+while i > 0:
+    arr.append(i)
+    i = i - 1
+
+comparisons = selection_sort(arr)
+print("result:", comparisons)

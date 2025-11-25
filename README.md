@@ -693,14 +693,14 @@ Results vary based on input size and system specifications.
 After running benchmarks:
 
 ```bash
-# View CSV results
-ls benchmark_results/*.csv
+# Default values
+python src/benchmarks/benchmark_runner.py 
 
-# View charts
-ls benchmark_results/charts/*.png
+# Custom limits (selection_sort, fibonacci_recursive, fibonacci_iterative)
+python src/benchmarks/benchmark_runner.py --limits 10 15 20
 
-# Open HTML report
-open benchmark_results/visualizations/benchmark_report.html
+# Without charts
+python src/benchmarks/benchmark_runner.py --no-charts
 ```
 
 ## 12. References

@@ -38,13 +38,20 @@ def generate_n_values_for_algorithm(algorithm_name, max_values=None, custom_valu
                 else:
                     return list(range(1, custom_value + 1))
     
-    # Default ranges
-    if "fibonacci" in algorithm_name:
-        full_range = list(range(1, 51))  # Fibonacci: 1 to 50
-    elif "selection_sort" in algorithm_name:
-        full_range = [1, 5, 10, 20, 30, 50, 75, 100, 150, 200]  # Selection Sort: reasonable sizes starting from 1
+    # Default ranges from config
+    from .config import ALGORITHM_CONFIGS
+    
+    # Get algorithm configuration
+    clean_name = algorithm_name.replace("_python", "")
+    
+    # Find matching algorithm config
+    for algo_key, config in ALGORITHM_CONFIGS.items():
+        if algo_key in clean_name:
+            full_range = config['default_range']
+            break
     else:
-        full_range = list(range(1, 51))  # Default: 1 to 50
+        # Fallback if no match found
+        full_range = list(range(1, 51))
     
     # If max_values is specified, limit the amount
     if max_values is not None and max_values > 0:

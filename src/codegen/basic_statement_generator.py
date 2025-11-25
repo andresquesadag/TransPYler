@@ -67,7 +67,7 @@ class BasicStatementGenerator:
             raise NotImplementedError(
                 f"BasicStatementGenerator does not support node type {type(node).__name__}"
             )
-        return method(node)  # TODO(any): method is not callable
+        return method(node)
 
     # ---------- Assignment Statements ----------
     def visit_Assign(self, node: Assign) -> str:

@@ -37,6 +37,15 @@ class DataStructureGenerator:
         self.target = "cpp"
         self.expr_generator = expr_generator
 
+    def _create_dynamic_vector(self, elements: list) -> str:
+        """Helper method to create DynamicType vector code with consistent formatting."""
+        if len(elements) <= 3:
+            elements_str = ", ".join(elements)
+            return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
+        else:
+            elements_str = ",\n    ".join(elements)
+            return f"DynamicType(std::vector<DynamicType>{{\n    {elements_str}\n}})"
+
     def visit(self, node) -> str:
         """
         Dispatch code generation to the appropriate method based on node type and target.
@@ -48,7 +57,6 @@ class DataStructureGenerator:
         method_name = f"visit_{node.__class__.__name__}_cpp"
         visitor = getattr(self, method_name, None)
         if visitor and callable(visitor):
-            # TODO(any): visitor is not callable
             return visitor(node)
         return self.generic_visit(node)
 
@@ -56,13 +64,13 @@ class DataStructureGenerator:
         """
         Fallback for unsupported nodes.
         Args:
-                        node: AST node.
+                node: AST node.
         Returns:
-                        str: Error comment for unsupported node type.
+                str: Error comment for unsupported node type.
         """
-        return f"/* Unsupported data structure: {type(node).__name__} */"
-
-
+        raise NotImplementedError(
+            f"DataStructureGenerator does not support node type {type(node).__name__}"
+        )
 
     # --- C++ ---
     def visit_ListExpr_cpp(self, node) -> str:
@@ -80,35 +88,9 @@ class DataStructureGenerator:
             else:
                 elements.append(self.visit(e))
         
-        if len(elements) <= 3:
-            # Short lists on one line
-            elements_str = ', '.join(elements)
-            return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
-        else:
-            # Long lists with line breaks for readability  
-            elements_str = ',\n    '.join(elements)
-            return f"DynamicType(std::vector<DynamicType>{{\n    {elements_str}\n}})"
+        return self._create_dynamic_vector(elements)
 
-    def _deduce_cpp_vector_type(self, node):
-        """
-        Deduce the type for std::vector in C++ based on the first element.
-        Args:
-                node (ListExpr): AST node for a list.
-        Returns:
-                str: Deduced C++ type.
-        """
-        elements = node.elements
-        if elements:
-            first = elements[0]
-            if hasattr(first, "value"):
-                if isinstance(first.value, int):
-                    return "int"
-                elif isinstance(first.value, float):
-                    return "double"
-                elif isinstance(first.value, str):
-                    return "string"
-            return "auto"
-        return "auto"
+
 
     def visit_TupleExpr_cpp(self, node) -> str:
         """
@@ -127,31 +109,9 @@ class DataStructureGenerator:
                 elements.append(self.visit(e))
         
         # For now, represent tuples as immutable lists
-        elements_str = ', '.join(elements)
-        return f"DynamicType(std::vector<DynamicType>{{{elements_str}}})"
+        return self._create_dynamic_vector(elements)
 
-    def _deduce_cpp_tuple_types(self, node):
-        """
-        Deduce types for std::tuple in C++ based on elements.
-        Args:
-                node (TupleExpr): AST node for a tuple.
-        Returns:
-                str: Deduced C++ types.
-        """
-        types = []
-        for elem in node.elements:
-            if hasattr(elem, "value"):
-                if isinstance(elem.value, int):
-                    types.append("int")
-                elif isinstance(elem.value, float):
-                    types.append("double")
-                elif isinstance(elem.value, str):
-                    types.append("string")
-                else:
-                    types.append("auto")
-            else:
-                types.append("auto")
-        return ", ".join(types)
+
 
     def visit_SetExpr_cpp(self, node) -> str:
         """
@@ -172,26 +132,7 @@ class DataStructureGenerator:
         elements_str = ', '.join(elements)
         return f"DynamicType(std::unordered_set<DynamicType>{{{elements_str}}})"
 
-    def _deduce_cpp_set_type(self, node):
-        """
-        Deduce the type for std::set in C++ based on the first element.
-        Args:
-                node (SetExpr): AST node for a set.
-        Returns:
-                str: Deduced C++ type.
-        """
-        elements = node.elements
-        if elements:
-            first = elements[0]
-            if hasattr(first, "value"):
-                if isinstance(first.value, int):
-                    return "int"
-                elif isinstance(first.value, float):
-                    return "double"
-                elif isinstance(first.value, str):
-                    return "string"
-            return "auto"
-        return "auto"
+
 
     def visit_DictExpr_cpp(self, node) -> str:
         """
@@ -217,32 +158,3 @@ class DataStructureGenerator:
             pairs_str = ',\n'.join(pairs)
             return f"DynamicType(std::map<std::string, DynamicType>{{\n{pairs_str}}})"
 
-    def _deduce_cpp_dict_types(self, node):
-        """
-        Deduce key and value types for std::map in C++ based on the first pair.
-        Args:
-                node (DictExpr): AST node for a dictionary.
-        Returns:
-                tuple: (key_type, value_type)
-        """
-        pairs = node.pairs
-        if pairs:
-            k, v = pairs[0]
-            k_type = "auto"
-            v_type = "auto"
-            if hasattr(k, "value"):
-                if isinstance(k.value, int):
-                    k_type = "int"
-                elif isinstance(k.value, float):
-                    k_type = "double"
-                elif isinstance(k.value, str):
-                    k_type = "string"
-            if hasattr(v, "value"):
-                if isinstance(v.value, int):
-                    v_type = "int"
-                elif isinstance(v.value, float):
-                    v_type = "double"
-                elif isinstance(v.value, str):
-                    v_type = "string"
-            return k_type, v_type
-        return "auto", "auto"

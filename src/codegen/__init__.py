@@ -27,11 +27,4 @@ __all__ = [
     "ScopeManager"
 ]
 
-# Helpers for automated tests
-def test_codegen():
-    """
-    Unit tests for code generators are implemented in the tests/ directory.
-    Example tests include: if statements, for loops, lists, functions, expressions, DynamicType.
-    """
-    print("Code generation tests are located in tests/codegen/")
-    return True
+# Tests for code generators are implemented in the tests/codegen/ directory

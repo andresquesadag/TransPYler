@@ -48,6 +48,7 @@ class DataStructureGenerator:
         method_name = f"visit_{node.__class__.__name__}_cpp"
         visitor = getattr(self, method_name, None)
         if visitor and callable(visitor):
+            # TODO(any): visitor is not callable
             return visitor(node)
         return self.generic_visit(node)
 

@@ -63,9 +63,12 @@ class CodeGenerator:
 
         # Inject data structure generator reference into expr generator for delegation
         self.expr_generator.data_structure_generator = self.data_structure_generator
+        self.basic_stmt_generator = BasicStatementGenerator(scope=self.scope)
 
         self.statement_visitor = StatementVisitor(
-            expr_generator=self.expr_generator, scope_manager=self.scope
+            expr_generator=self.expr_generator,
+            scope_manager=self.scope,
+            basic_stmt_generator=self.basic_stmt_generator,
         )  # Handles control flow (Persona 3)
         self.function_generator = FunctionGenerator(
             self.scope

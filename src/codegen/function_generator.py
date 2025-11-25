@@ -40,7 +40,9 @@ class FunctionGenerator:
         self.expr_gen = ExprGenerator(scope=self.scope)
         self.basic_stmt = BasicStatementGenerator(self.scope)
         self.ctrl_stmt = StatementVisitor(
-            expr_generator=self.expr_gen, scope_manager=self.scope
+            expr_generator=self.expr_gen,
+            scope_manager=self.scope,
+            basic_stmt_generator=self.basic_stmt,
         )
 
     def visit(self, node: FunctionDef) -> str:

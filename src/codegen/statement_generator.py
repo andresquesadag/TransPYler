@@ -10,6 +10,7 @@ Key Features:
 - Used by CodeGenerator to handle all control flow code generation.
 - Includes helpers for type deduction in C++ for for-each loops and other control flow helpers.
 """
+
 # TODO(any): List and Optional are imported but not used
 from typing import List, Optional
 
@@ -22,7 +23,7 @@ class StatementVisitor:
     Persona 3 responsibility: Implements control flow translation and helpers.
     """
 
-    def __init__(self, expr_generator=None, scope_manager=None):
+    def __init__(self, expr_generator=None, scope_manager=None, basic_stmt_generator=None):
         """
         Initializes the StatementVisitor for C++ code generation.
         Args:
@@ -34,6 +35,7 @@ class StatementVisitor:
         self.indent_str = "    "
         self.expr_generator = expr_generator
         self.scope_manager = scope_manager
+        self.basic_stmt_generator = basic_stmt_generator
         self._iter_counter = (
             0  # Counter for generating readable iterator variable names
         )
@@ -247,28 +249,29 @@ class StatementVisitor:
         """
         Generates C++ code for an assignment statement.
         Args:
-                node (Assign): AST node for an assignment.
+            node (Assign): AST node for an assignment.
         Returns:
-                str: C++ code for the assignment.
+            str: C++ code for the assignment.
         """
-        # This should be handled by BasicStatementGenerator, not here
-        # But we provide a basic implementation as fallback
-        if (
-            hasattr(node.target, "name")
-            and hasattr(self, "expr_generator")
-            and self.expr_generator
-        ):
+        # Delegate to BasicStatementGenerator if available
+        if self.basic_stmt_generator:
+            return self.basic_stmt_generator.visit(node)
+
+        # Fallback implementation (should not happen in production)
+        if hasattr(node.target, "name"):
             name = node.target.name
             rhs_code = self.expr_generator.visit(node.value)
 
-            # Check if variable needs declaration
             if self.scope_manager and not self.scope_manager.exists(name):
                 self.scope_manager.declare(name)
                 return f"DynamicType {name} = {rhs_code};"
             else:
                 return f"{name} = {rhs_code};"
         else:
-            return f"/* Assignment statement */;"
+            # For Subscript and Attribute, we MUST have BasicStatementGenerator
+            raise RuntimeError(
+                f"Cannot handle assignment to {type(node.target).__name__} without BasicStatementGenerator"
+            )
 
     def visit_Return_cpp(self, node):
         """

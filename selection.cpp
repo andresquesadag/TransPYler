@@ -1,0 +1,41 @@
+#include "builtins.hpp"
+using namespace std;
+
+DynamicType _fn_selection_sort(DynamicType arr) {
+	DynamicType n = len(arr);
+	DynamicType comparisons = DynamicType(0);
+	DynamicType i = DynamicType(0);
+	while (DynamicType((i) < ((n) - (DynamicType(1)))).toBool())
+	{
+	    DynamicType min_idx = i;
+	    DynamicType j = (i) + (DynamicType(1));
+	    while (DynamicType((j) < (n)).toBool())
+	{
+	        comparisons = (comparisons) + (DynamicType(1));
+	        if (DynamicType(((arr)[j]) < ((arr)[min_idx])).toBool())
+	{
+	            min_idx = j;
+	        }
+	        j = (j) + (DynamicType(1));
+	    }
+	    DynamicType temp = (arr)[i];
+	    (arr)[i] = (arr)[min_idx];
+	    (arr)[min_idx] = temp;
+	    i = (i) + (DynamicType(1));
+	}
+	return comparisons;
+}
+
+int main() {
+  DynamicType n = DynamicType(100);
+  DynamicType arr = DynamicType(std::vector<DynamicType>{});
+  DynamicType i = n;
+  while (DynamicType((i) > (DynamicType(0))).toBool())
+  {
+      (arr).append(i);
+      i = (i) - (DynamicType(1));
+  }
+  DynamicType comparisons = _fn_selection_sort(arr);
+  print(DynamicType(std::string("result:")), comparisons);
+  return 0;
+}

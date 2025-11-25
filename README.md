@@ -672,25 +672,7 @@ The benchmarking suite compares three implementations:
 2. **C++ Transpiled**: TransPYler-generated C++ code
 3. **C++ Manual**: Hand-written optimized C++ code
 
-### 11.2 Test Algorithms
-
-- **Fibonacci Recursive**: Tests function call overhead and recursion (n=1 to 50)
-- **Fibonacci Iterative**: Tests loop performance and arithmetic (n=1 to 50)
-- **Selection Sort**: Tests array operations and nested loops (sizes: 10, 50, 100, 200, 300, 500, 750, 1000, 1250, 1500)
-
-### 11.3 Expected Performance
-
-Typical speedup factors observed:
-
-- **Fibonacci Recursive**: 15-25x faster than Python
-- **Fibonacci Iterative**: 18-30x faster than Python
-- **Selection Sort**: 20-40x faster than Python
-
-Results vary based on input size and system specifications.
-
-### 11.4 Viewing Results
-
-After running benchmarks:
+### 11.2 Running Benchmarks
 
 ```bash
 # Default values
@@ -703,6 +685,61 @@ python src/benchmarks/benchmark_runner.py --limits 10 15 20
 python src/benchmarks/benchmark_runner.py --no-charts
 ```
 
+### 11.3 Test Algorithms
+
+- **Fibonacci Recursive**: Tests function call overhead and recursion (n=1 to 50)
+- **Fibonacci Iterative**: Tests loop performance and arithmetic (n=1 to 50)
+- **Selection Sort**: Tests array operations and nested loops (sizes: 10, 50, 100, 200, 300, 500, 750, 1000, 1250, 1500)
+
+### 11.4 Expected Performance
+
+Typical speedup factors observed:
+
+- **Fibonacci Recursive**: 15-25x faster than Python
+- **Fibonacci Iterative**: 18-30x faster than Python
+- **Selection Sort**: 20-40x faster than Python
+
+Results vary based on input size and system specifications.
+
+### 11.5 Viewing Results
+
+After running benchmarks:
+
+```bash
+# View CSV results
+ls benchmark_results/*.csv
+
+# View charts
+ls benchmark_results/charts/*.png
+
+# View tables
+ls benchmark_results/tables/*.png
+
+```
+
+### 11.6 Benchmark Methodology
+
+#### Test Environment
+- **Execution**: Each test runs 3 times per data point for statistical reliability
+- **Measurement**: Wall-clock time using Python's `subprocess` module
+- **Compilation**: C++ code compiled with `-std=c++17 -O2` optimization flags
+- **Verification**: All implementations validated to produce identical outputs before timing
+
+#### Test Process
+1. **File Generation**: Create Python files with specific input ranges
+2. **Transpilation**: Convert Python to C++ using TransPYler
+3. **Compilation**: Build C++ executables (transpiled and manual versions)
+4. **Output Verification**: Ensure all three versions produce identical results
+5. **Performance Testing**: Execute each version multiple times and measure execution time
+6. **Data Collection**: Record timing data and calculate speedup ratios
+7. **Visualization**: Generate CSV files, charts, and aesthetic tables
+
+#### Algorithms Tested
+- **Fibonacci Recursive**: Exponential complexity O(2^n) - tests function call overhead
+- **Fibonacci Iterative**: Linear complexity O(n) - tests loop efficiency  
+- **Selection Sort**: Quadratic complexity O(n²) - tests array operations with n×10 sized arrays
+
+
 ## 12. References
 
 - [PLY Documentation](https://www.dabeaz.com/ply/)
@@ -710,7 +747,8 @@ python src/benchmarks/benchmark_runner.py --no-charts
 - [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
 - [C++ Reference](https://en.cppreference.com/)
 
----
+--- 
+
 
 ## 13. Authors
 

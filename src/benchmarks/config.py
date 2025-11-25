@@ -12,13 +12,13 @@ ALGORITHM_CONFIGS = {
         'python_pattern': "values = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]",
         'cpp_pattern': "DynamicType(std::vector<DynamicType>{DynamicType(1), DynamicType(5), DynamicType(10), DynamicType(15), DynamicType(20), DynamicType(25), DynamicType(30), DynamicType(35), DynamicType(40), DynamicType(45), DynamicType(50)})",
         'manual_cpp_file': 'fibonacci_iterative.cpp',
-        'default_range': list(range(1, 121))
+        'default_range': list(range(1, 51))
     },
     'fibonacci_recursive': {
         'python_pattern': "values = [1, 5, 10, 15, 20, 25, 30, 35]",
         'cpp_pattern': "DynamicType(std::vector<DynamicType>{DynamicType(1), DynamicType(5), DynamicType(10), DynamicType(15), DynamicType(20), DynamicType(25), DynamicType(30), DynamicType(35)})",
         'manual_cpp_file': 'fibonacci_recursive.cpp',
-        'default_range': list(range(1, 41))
+        'default_range': list(range(1, 46))
     },
     'selection_sort': {
         'python_pattern': "sizes = [10, 50, 100, 200, 300, 500, 750, 1000, 1250, 1500]",

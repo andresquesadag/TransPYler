@@ -20,8 +20,8 @@ DynamicType _fn_selection_sort(DynamicType arr) {
 	        j = (j) + (DynamicType(1));
 	    }
 	    DynamicType temp = (arr)[i];
-	    /* Assignment statement */;
-	    /* Assignment statement */;
+	    (arr)[i] = (arr)[min_idx];
+	    (arr)[min_idx] = temp;
 	    i = (i) + (DynamicType(1));
 	}
 	return comparisons;

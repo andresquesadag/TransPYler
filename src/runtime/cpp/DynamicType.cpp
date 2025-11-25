@@ -585,3 +585,54 @@ DynamicType DynamicType::get(const std::string &key) const {
     throw std::runtime_error("Key not found in dictionary");
   }
 }
+
+DynamicType DynamicType::keys() const {
+  if (!isDict()) {
+    throw std::runtime_error("keys() can only be called on dictionaries");
+  }
+  
+  const std::map<std::string, DynamicType>& dict = getDict();
+  std::vector<DynamicType> result;
+  result.reserve(dict.size());
+  
+  for (const std::pair<const std::string, DynamicType>& pair : dict) {
+    result.push_back(DynamicType(pair.first));
+  }
+  
+  return DynamicType(result);
+}
+
+DynamicType DynamicType::values() const {
+  if (!isDict()) {
+    throw std::runtime_error("values() can only be called on dictionaries");
+  }
+  
+  const std::map<std::string, DynamicType>& dict = getDict();
+  std::vector<DynamicType> result;
+  result.reserve(dict.size());
+  for (const std::pair<const std::string, DynamicType>& pair : dict) {
+    result.push_back(pair.second);
+  }
+  
+  return DynamicType(result);
+}
+
+DynamicType DynamicType::items() const {
+    if (!isDict()) {
+        throw std::runtime_error("items() can only be called on dictionaries");
+    }
+    
+    const std::map<std::string, DynamicType>& dict = getDict();
+    std::vector<DynamicType> result;
+    result.reserve(dict.size());
+    
+    for (const std::pair<const std::string, DynamicType>& pair : dict) {
+        // Create a 2-element vector [key, value]
+        std::vector<DynamicType> item;
+        item.push_back(DynamicType(pair.first));
+        item.push_back(pair.second);
+        result.push_back(DynamicType(item));
+    }
+    
+    return DynamicType(result);
+}

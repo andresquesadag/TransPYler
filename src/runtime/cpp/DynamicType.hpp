@@ -186,16 +186,38 @@ class DynamicType{
 
     // Dict methods
     void remove(const std::string &key);
-    void set(const std::string &key, const DynamicType &value);  // Dict set method
-    void set(const DynamicType &key, const DynamicType &value) { set(key.toString(), value); } // DynamicType overload
-    DynamicType get(const std::string &key) const;               // Dict get method
-    DynamicType get(const DynamicType &key) const { return get(key.toString()); } // DynamicType overload
-    void removeKey(const std::string &key) { remove(key); }     // Alias for remove
-    void removeKey(const DynamicType &key) { remove(key.toString()); } // DynamicType overload
+    void set(const std::string &key, const DynamicType &value);
+    void set(const DynamicType &key, const DynamicType &value) { set(key.toString(), value); }
+    DynamicType get(const std::string &key) const;
+    DynamicType get(const DynamicType &key) const { return get(key.toString()); }
+    void removeKey(const std::string &key) { remove(key); }
+    void removeKey(const DynamicType &key) { remove(key.toString()); }
+    /**
+     * Get all keys from dictionary as a list.
+     * Python example: my_dict.keys()
+     * @return DynamicType containing list of keys as strings
+     * @throws std::runtime_error if not a dict
+    */
+    DynamicType keys() const;
+    /**
+     * Get all values from dictionary as a list.
+     * Python example: my_dict.values()
+     * @return DynamicType containing list of values
+     * @throws std::runtime_error if not a dict
+     */
+    DynamicType values() const;
+    /**
+     * Get all key-value pairs from dictionary as a list of lists.
+     * Python example: my_dict.items()
+     * Each item is a 2-element list [key, value]
+     * @return DynamicType containing list of [key, value] pairs
+     * @throws std::runtime_error if not a dict
+     */
+    DynamicType items() const;
     
     // List methods
-    void removeAt(size_t index) { remove(index); }              // Alias for remove
-    void removeAt(const DynamicType &index) { remove(static_cast<size_t>(index.toInt())); } // DynamicType overload
+    void removeAt(size_t index) { remove(index); }
+    void removeAt(const DynamicType &index) { remove(static_cast<size_t>(index.toInt())); }
     
     // Dict, List common methods  
     bool contains(const DynamicType& key) const;

@@ -101,7 +101,7 @@ DynamicType max(const DynamicType& a, const DynamicType& b) {
     return (a > b) ? a : b;
 }
 
-DynamicType sum(DynamicType& iterable) {
+DynamicType sum(const DynamicType& iterable) {
     if (!iterable.isList()) {
         throw std::runtime_error("sum() requires a list");
     }

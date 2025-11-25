@@ -268,9 +268,8 @@ class ExprGenerator:
             if method_name == "pop":
                 if len(args) == 0:
                     return f"({obj_code}).removeAt(DynamicType(-1))"
-                else:
-                    return f"({obj_code}).removeKey({args_code[0]})"
-            elif method_name in ["sublist", "slice"]:
+                return f"({obj_code}).removeKey({args_code[0]})"
+            if method_name in ["sublist", "slice"]:
                 if len(args_code) == 2:
                     return f"({obj_code}).sublist({args_code[0]}, {args_code[1]})"
 
@@ -279,9 +278,9 @@ class ExprGenerator:
 
         if method_name == "keys":
             return f"({obj_code}).keys()"
-        elif method_name == "values":
+        if method_name == "values":
             return f"({obj_code}).values()"
-        elif method_name == "items":
+        if method_name == "items":
             return f"({obj_code}).items()"
 
         args_str = ", ".join(args_code)

@@ -141,8 +141,6 @@ class CodeGenerator:
 
         return "\n".join(parts)
 
-
-
     def _emit_cpp_top_stmt(self, stmt: AstNode) -> List[str]:
         """Emit C++ code for top-level statements in main()."""
         # Basic statements
@@ -152,7 +150,7 @@ class CodeGenerator:
                 return ["  " + code]
             else:
                 return []  # Skip empty code (like import statements)
-        
+
         # Control flow
         if isinstance(stmt, (If, While, For, Block)):
             # Generate code and check if it contains __name__ == "__main__"
@@ -166,7 +164,7 @@ class CodeGenerator:
                 "  " + line if line.strip() else line
                 for line in block_code.splitlines()
             ]
-        
+
         raise NotImplementedError(
             f"[CodeGenerator] Statement not supported at global level: {type(stmt).__name__}"
         )
@@ -187,4 +185,3 @@ class CodeGenerator:
         with open(file=filename, mode="w", encoding="utf-8") as f:
             f.write(code)
         return filename
-

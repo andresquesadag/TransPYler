@@ -9,12 +9,9 @@ Handles if/while/for loops, break/continue/pass, bl    def visit_Break_cpp(self,
 """
 
 
-
-
 class StatementVisitor:
     """Generates C++ code for control flow statements."""
 
-    def __init__(self, expr_generator=None, scope_manager=None, basic_stmt_generator=None):
     def __init__(
         self, expr_generator=None, scope_manager=None, basic_stmt_generator=None
     ):
@@ -174,4 +171,3 @@ class StatementVisitor:
             return f"return {self.expr_generator.visit(node.value)};"
         else:
             return "return DynamicType();"
-

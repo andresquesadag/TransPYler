@@ -12,7 +12,7 @@ ALGORITHM_CONFIGS = {
         'python_pattern': "values = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]",
         'cpp_pattern': "DynamicType(std::vector<DynamicType>{DynamicType(1), DynamicType(5), DynamicType(10), DynamicType(15), DynamicType(20), DynamicType(25), DynamicType(30), DynamicType(35), DynamicType(40), DynamicType(45), DynamicType(50)})",
         'manual_cpp_file': 'fibonacci_iterative.cpp',
-        'default_range': list(range(1, 51))
+        'default_range': list(range(1, 121))
     },
     'fibonacci_recursive': {
         'python_pattern': "values = [1, 5, 10, 15, 20, 25, 30, 35]",

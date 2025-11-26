@@ -9,7 +9,7 @@ import subprocess
 import csv
 from pathlib import Path # TODO(any): Is this needed? (is not used in the code)
 
-from src.benchmarks.config import PATHS, PERFORMANCE_SETTINGS
+from src.benchmarks.config import PATHS, PERFORMANCE_SETTINGS, get_benchmark_suffix
 
 
 def measure_execution_time(executable_or_script, n_value, is_python=False, rounds=None):
@@ -220,7 +220,8 @@ def run_performance_tests(generated_files):
 
         # Write CSV file for this algorithm
         if csv_data:
-            csv_file = results_dir / f"{algorithm_name}_results.csv"
+            suffix = get_benchmark_suffix()
+            csv_file = results_dir / f"{algorithm_name}_results{suffix}.csv"
             with open(csv_file, "w", newline="", encoding="utf-8") as f:
                 fieldnames = [
                     "n",

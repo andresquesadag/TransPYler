@@ -24,10 +24,10 @@ from src.benchmarks.performance_tester import (
     verify_program_outputs,
 )
 from src.benchmarks.utilities import cleanup_generated_files
-from src.benchmarks.config import PATHS
+from src.benchmarks.config import PATHS, set_benchmark_suffix
 
 
-def run_benchmark(max_values=None, generate_charts=True, custom_values=None):
+def run_benchmark(max_values=None, generate_charts=True, custom_values=None, suffix=""):
     """
     Run complete benchmark with modular architecture:
     1. GENERATE all transpiled files
@@ -38,9 +38,16 @@ def run_benchmark(max_values=None, generate_charts=True, custom_values=None):
     max_values: Limit number of test values per algorithm
     generate_charts: If True, generates visual charts and HTML report
     custom_values: Dictionary with custom limits for each algorithm
+    suffix: Suffix to add to output files (e.g., 'py310' for Python 3.10)
     """
     print("TransPYler Benchmark Runner")
     print("=" * 50)
+    
+    # Set the benchmark suffix globally
+    if suffix:
+        set_benchmark_suffix(suffix)
+        print(f"Output suffix: _{suffix}")
+        print("=" * 50)
 
     try:
         # Phase 1: Generate all files
@@ -101,6 +108,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip generation of visualization charts and tables",
     )
+    parser.add_argument(
+        "--suffix",
+        type=str,
+        default="",
+        help="Suffix to add to output files (e.g., 'py310' for Python 3.10 results)",
+    )
 
     args = parser.parse_args()
 
@@ -119,4 +132,5 @@ if __name__ == "__main__":
     run_benchmark(
         generate_charts=not args.no_charts,
         custom_values=custom_values,
+        suffix=args.suffix,
     )

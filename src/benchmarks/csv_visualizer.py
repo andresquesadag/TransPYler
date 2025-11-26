@@ -6,12 +6,19 @@ Generates essential comparison charts from benchmark CSV results
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.benchmarks.config import get_benchmark_suffix
 
 # Simple style
 plt.style.use("seaborn-v0_8")
 
 
-def generate_individual_algorithm_charts(csv_files, output_dir):
+def generate_individual_algorithm_charts(csv_files, output_dir, suffix=""):
     """Generate individual charts for each algorithm"""
     print("\nGenerating individual algorithm charts...")
     
@@ -68,7 +75,7 @@ def generate_individual_algorithm_charts(csv_files, output_dir):
         
         # Save individual chart
         safe_name = algorithm.lower().replace(" ", "_")
-        chart_file = output_dir / f"{safe_name}_individual.png"
+        chart_file = output_dir / f"{safe_name}_individual{suffix}.png"
         plt.savefig(chart_file, dpi=300, bbox_inches="tight")
         plt.close()
         print(f"✓ {chart_file.name} - Individual chart for {algorithm}")
@@ -80,9 +87,16 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
     results_dir = Path(results_dir)
     output_dir = results_dir / "charts"
     output_dir.mkdir(exist_ok=True)
+    
+    # Get suffix from config
+    suffix = get_benchmark_suffix()
 
-    # Find CSV files
-    csv_files = list(results_dir.glob("*_results.csv"))
+    # Find CSV files (with or without suffix)
+    if suffix:
+        csv_files = list(results_dir.glob(f"*_results{suffix}.csv"))
+    else:
+        csv_files = list(results_dir.glob("*_results.csv"))
+    
     if not csv_files:
         print("No CSV files found!")
         return
@@ -90,7 +104,7 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
     print(f"Generating charts from {len(csv_files)} CSV files...")
 
     # Generate individual algorithm charts
-    generate_individual_algorithm_charts(csv_files, output_dir)
+    generate_individual_algorithm_charts(csv_files, output_dir, suffix)
 
     # 1. Combined Execution Time Chart
     plt.figure(figsize=(14, 8))
@@ -169,10 +183,10 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
     )
 
     plt.tight_layout()
-    plt.savefig(output_dir / "execution_times.png", dpi=300, bbox_inches="tight")
+    plt.savefig(output_dir / f"execution_times{suffix}.png", dpi=300, bbox_inches="tight")
     plt.close()
     print(
-        "✓ execution_times.png - Shows Python Original vs C++ Transpiled vs C++ Manual"
+        f"✓ execution_times{suffix}.png - Shows Python Original vs C++ Transpiled vs C++ Manual"
     )
 
     # 2. Speedup Chart (how much faster than Python)
@@ -242,9 +256,9 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
     )
 
     plt.tight_layout()
-    plt.savefig(output_dir / "speedup.png", dpi=300, bbox_inches="tight")
+    plt.savefig(output_dir / f"speedup{suffix}.png", dpi=300, bbox_inches="tight")
     plt.close()
-    print("✓ speedup.png - Shows C++ Transpiled and Manual speedup vs Python Original")
+    print(f"✓ speedup{suffix}.png - Shows C++ Transpiled and Manual speedup vs Python Original")
 
     # 3. Bar Chart Comparison (Average and Maximum Speedups)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
@@ -367,10 +381,10 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
         )
 
     plt.tight_layout()
-    plt.savefig(output_dir / "comparison.png", dpi=300, bbox_inches="tight")
+    plt.savefig(output_dir / f"comparison{suffix}.png", dpi=300, bbox_inches="tight")
     plt.close()
     print(
-        "✓ comparison.png - Bar chart comparison: Python Original vs C++ Transpiled vs C++ Manual"
+        f"✓ comparison{suffix}.png - Bar chart comparison: Python Original vs C++ Transpiled vs C++ Manual"
     )
 
     print(f"\nCharts saved in: {output_dir}")

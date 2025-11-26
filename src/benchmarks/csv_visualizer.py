@@ -5,6 +5,7 @@ Generates essential comparison charts from benchmark CSV results
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter, LogLocator
 from pathlib import Path
 import sys
 
@@ -40,10 +41,21 @@ def generate_individual_algorithm_charts(csv_files, output_dir, suffix=""):
                 linewidth=3, markersize=8, color=colors[2], alpha=0.8)
         
         ax1.set_xlabel("Input Size (n)", fontsize=12, fontweight="bold")
-        ax1.set_ylabel("Execution Time (ms)", fontsize=12, fontweight="bold")
+        ax1.set_ylabel("Execution Time (ms, log scale)", fontsize=12, fontweight="bold")
         ax1.set_title(f"{algorithm} - Execution Times", fontsize=14, fontweight="bold")
+        ax1.set_yscale('log')  # Logarithmic scale for better visibility
+        
+        # Format Y-axis to show normal numbers instead of scientific notation
+        # Use 1-2-5 pattern for intermediate values
+        ax1.yaxis.set_major_locator(LogLocator(base=10.0, subs=(1.0, 2.0, 5.0), numticks=15))
+        ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{int(x)}' if x >= 1 else f'{x:.1f}'))
+        ax1.yaxis.set_minor_formatter(FuncFormatter(lambda x, p: ''))
+        
+        # Disable offset text that appears on the axis (e.g., "× 10¹")
+        ax1.yaxis.offsetText.set_visible(False)
+        
         ax1.legend()
-        ax1.grid(True, alpha=0.3)
+        ax1.grid(True, alpha=0.3, which='both')  # Show grid for both major and minor ticks
         
         # Right: Speedups
         ax2.plot(df["n"], df["speedup_transpiled"], "s-", label="C++ Transpiled Speedup", 
@@ -162,14 +174,26 @@ def visualize_benchmark_results(results_dir="benchmark_results"):
         )
 
     plt.xlabel("Input Size (n)", fontsize=12, fontweight="bold")
-    plt.ylabel("Execution Time (milliseconds)", fontsize=12, fontweight="bold")
+    plt.ylabel("Execution Time (milliseconds, log scale)", fontsize=12, fontweight="bold")
     plt.title(
         "Performance Comparison: Python vs C++ Transpiled vs C++ Manual",
         fontsize=14,
         fontweight="bold",
     )
+    plt.yscale('log')  # Logarithmic scale for better visibility of all implementations
+    
+    # Format Y-axis to show normal numbers instead of scientific notation
+    ax = plt.gca()
+    # Use 1-2-5 pattern for intermediate values
+    ax.yaxis.set_major_locator(LogLocator(base=10.0, subs=(1.0, 2.0, 5.0), numticks=15))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{int(x)}' if x >= 1 else f'{x:.1f}'))
+    ax.yaxis.set_minor_formatter(FuncFormatter(lambda x, p: ''))
+    
+    # Disable offset text that appears on the axis (e.g., "× 10¹")
+    ax.yaxis.offsetText.set_visible(False)
+    
     plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.3, which='both')  # Show grid for both major and minor ticks
 
     # Add annotations
     plt.text(

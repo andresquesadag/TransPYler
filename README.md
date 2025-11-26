@@ -944,6 +944,110 @@ Performance remains remarkably stable across all input sizes:
 | **Selection Sort** | Manual (53.9ms) | Transpiled (60.6ms) | Python (98.3ms) |
 | **Overall Best** | **Manual C++** (2/3 wins) | **Transpiled** (1/3 wins) | **Python** (0/3 wins) |
 
+---
+
+### 11.6 Python Version Comparison: 3.12 vs 3.10
+
+The benchmarks were executed on both Python 3.12 and Python 3.10 to analyze version-specific performance differences. 
+
+According to PEP 659 – Specializing Adaptive Interpreter, Python 3.11 introduces an adaptive interpreter that dynamically specializes bytecode instructions based on the types and values used. This technique, known as quickening, allows generic instructions to be replaced with optimized versions, achieving performance improvements of between 10% and 60% compared to Python 3.10. As a result, Python 3.11 offers more efficient execution without altering the semantics of the language, making it a significant advance in CPython optimization.
+
+The following table shows the **average execution times** across all test cases for each algorithm and implementation:
+
+#### Performance Comparison Table
+
+| Algorithm | Implementation | Python 3.12 (ms) | Python 3.10 (ms) | Difference | % Change | Better |
+|-----------|---------------|------------------|------------------|------------|----------|--------|
+| **Fibonacci Iterative** | Python Original | 106.90 | 119.69 | +12.79 ms | **+12.0%** slower in 3.10 | **Python 3.12** |
+| | C++ Transpiled | 60.47 | 55.26 | -5.21 ms | **-8.6%** faster in 3.10 | **Python 3.10** |
+| | C++ Manual | 87.24 | 55.69 | -31.55 ms | **-36.2%** faster in 3.10 | **Python 3.10** |
+| **Fibonacci Recursive** | Python Original | 11,921.24 | 15,324.65 | +3,403.41 ms | **+28.5%** slower in 3.10 | **Python 3.12** |
+| | C++ Transpiled | 8,334.89 | 8,678.72 | +343.83 ms | **+4.1%** slower in 3.10 | **Python 3.12** |
+| | C++ Manual | 153.92 | 96.83 | -57.09 ms | **-37.1%** faster in 3.10 | **Python 3.10** |
+| **Selection Sort** | Python Original | 98.33 | 114.54 | +16.21 ms | **+16.5%** slower in 3.10 | **Python 3.12** |
+| | C++ Transpiled | 60.64 | 61.06 | +0.42 ms | **+0.7%** slower in 3.10 | **Python 3.12** |
+| | C++ Manual | 53.94 | 55.31 | +1.37 ms | **+2.5%** slower in 3.10 | **Python 3.12** |
+
+#### Key Observations
+
+**1. Fibonacci Iterative Performance Analysis**
+
+**Python 3.12 Results:**
+![Fibonacci Iterative - Python 3.12](benchmark_results/charts/fibonacci_iterative_individual.png)
+
+**Python 3.10 Results:**
+![Fibonacci Iterative - Python 3.10](benchmark_results/charts/fibonacci_iterative_py310_individual_py310.png)
+
+**Observations:**
+- **Python Original (Fangless)**: Python 3.12 is **12% faster** (106.90ms vs 119.69ms) - **Better: Python 3.12** 
+  - Python 3.12 provide clear advantage for pure Python execution
+  - Consistent performance improvement across all n values
+  
+- **C++ Transpiled**: Python 3.10 is **8.6% faster** (55.26ms vs 60.47ms) - **Better: Python 3.10**
+  - The transpiled code runs slightly faster when executed from Python 3.10
+  - Minimal but consistent improvement across all test cases
+  
+- **C++ Manual**: Python 3.10 is **36.2% faster** (55.69ms vs 87.24ms) - **Better: Python 3.10**
+  - Both versions exhibit identical startup overhead anomaly (1034-1042ms for n=1-4)
+  - From n=5 onwards, Python 3.10 is a little bit faster (~52ms vs ~60ms average)
+  - The 36% difference in overall averages is due to both versions having the cold-start penalty, but Python 3.10 performing slightly better after normalization
+
+---
+
+**2. Fibonacci Recursive Performance Analysis**
+
+**Python 3.12 Results:**
+![Fibonacci Recursive - Python 3.12](benchmark_results/charts/fibonacci_recursive_individual.png)
+
+**Python 3.10 Results:**
+![Fibonacci Recursive - Python 3.10](benchmark_results/charts/fibonacci_recursive_py310_individual_py310.png)
+
+**Observations:**
+- **Python Original (Fangless)**: Python 3.12 is **28.5% faster** (11,921ms vs 15,325ms) - **Better: Python 3.12**
+  - Most significant performance difference between versions
+  - Python 3.12's recursive call optimizations provide substantial benefit
+  
+- **C++ Transpiled**: Python 3.12 is **4.1% faster** (8,335ms vs 8,679ms) - **Better: Python 3.12**
+  - Minimal version impact on transpiled code performance
+  - Performance collapse at n>35 occurs in both versions
+  
+- **C++ Manual**: Python 3.10 is **37.1% faster** (96.83ms vs 153.92ms) - **Better: Python 3.10**
+  - Python 3.10 shows more consistent performance advantage across all recursion depths
+
+---
+
+**3. Selection Sort Performance Analysis**
+
+**Python 3.12 Results:**
+![Selection Sort - Python 3.12](benchmark_results/charts/selection_sort_individual.png)
+
+**Python 3.10 Results:**
+![Selection Sort - Python 3.10](benchmark_results/charts/selection_sort_py310_individual_py310.png)
+
+**Observations:**
+- **Python Original (Fangless)**: Python 3.12 is **16.5% faster** (98.33ms vs 114.54ms) - **Better: Python 3.12**
+  - Consistent advantage for Python 3.12
+  - Performance gap remains stable across all array sizes (n=1-50)
+  
+- **C++ Transpiled**: Python 3.12 is **0.7% faster** (60.64ms vs 61.06ms) - **Better: Python 3.12**
+  - Negligible difference (less than 1ms average)
+  - Version impact is minimal for transpiled code
+  - Both versions show identical performance characteristics
+  
+- **C++ Manual**: Python 3.12 is **2.5% faster** (53.94ms vs 55.31ms) - **Better: Python 3.12**
+  - Small but consistent advantage for Python 3.12
+  - Performance remains stable and predictable in both versions
+
+---
+
+**4. Overall Version Comparison Summary**
+
+| Category | Key Insight |
+|----------|-------------|
+| **Python Original** | Python 3.12 is **12-28% faster** for pure Python code |
+| **C++ Transpiled** | Minimal version impact (~1-8% difference) |
+| **C++ Manual**  | Mixed results: Python 3.10 wins 2/3 cases by **6-7%**, Python 3.12 wins 1/3 by **3%** |
+| **Overall** | **Python 3.12 recommended for most use cases** |
 
 ---
 
@@ -954,6 +1058,7 @@ Performance remains remarkably stable across all input sizes:
 - [Python 3 Language Reference](https://docs.python.org/3/reference/)
 - [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
 - [C++ Reference](https://en.cppreference.com/)
+- [Python Enhancement Proposals](https://peps.python.org/pep-0659/)
 
 --- 
 

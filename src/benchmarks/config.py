@@ -54,6 +54,20 @@ PERFORMANCE_SETTINGS = {
     'timeout_seconds': 30     # Timeout for individual tests
 }
 
+# Benchmark suffix (can be set dynamically for version-specific runs)
+BENCHMARK_SUFFIX = ""
+
+
+def set_benchmark_suffix(suffix):
+    """Set the suffix for benchmark output files (e.g., 'py310' for Python 3.10)"""
+    global BENCHMARK_SUFFIX
+    BENCHMARK_SUFFIX = f"_{suffix}" if suffix else ""
+
+
+def get_benchmark_suffix():
+    """Get the current benchmark suffix"""
+    return BENCHMARK_SUFFIX
+
 
 def get_algorithm_config(algorithm_name):
     """Get configuration for a specific algorithm"""

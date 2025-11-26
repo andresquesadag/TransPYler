@@ -8,11 +8,18 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from pathlib import Path
 import numpy as np
+import sys
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.benchmarks.config import get_benchmark_suffix
 
 # Configure matplotlib for better table rendering
 plt.style.use("seaborn-v0_8")
 
-def generate_algorithm_table(csv_file, output_dir):
+def generate_algorithm_table(csv_file, output_dir, suffix=""):
     """Generate a beautiful table image for a single algorithm"""
     df = pd.read_csv(csv_file)
     algorithm = csv_file.stem.replace("_results", "").replace("_", " ").title()
@@ -112,14 +119,14 @@ def generate_algorithm_table(csv_file, output_dir):
     
     # Save table
     safe_name = algorithm.lower().replace(" ", "_")
-    table_file = output_dir / f"{safe_name}_table.png"
+    table_file = output_dir / f"{safe_name}_table{suffix}.png"
     plt.savefig(table_file, dpi=300, bbox_inches="tight", facecolor='white')
     plt.close()
     
     return table_file
 
 
-def generate_summary_table(csv_files, output_dir):
+def generate_summary_table(csv_files, output_dir, suffix=""):
     """Generate a summary comparison table across all algorithms"""
     fig, ax = plt.subplots(figsize=(14, 8))
     ax.axis('tight')
@@ -208,7 +215,7 @@ def generate_summary_table(csv_files, output_dir):
     plt.subplots_adjust(top=0.9)
     
     # Save summary table
-    summary_file = output_dir / "benchmark_summary_table.png"
+    summary_file = output_dir / f"benchmark_summary_table{suffix}.png"
     plt.savefig(summary_file, dpi=300, bbox_inches="tight", facecolor='white')
     plt.close()
     
@@ -221,8 +228,15 @@ def generate_benchmark_tables(results_dir="benchmark_results"):
     output_dir = results_dir / "tables"
     output_dir.mkdir(exist_ok=True)
     
-    # Find CSV files
-    csv_files = list(results_dir.glob("*_results.csv"))
+    # Get suffix from config
+    suffix = get_benchmark_suffix()
+    
+    # Find CSV files (with or without suffix)
+    if suffix:
+        csv_files = list(results_dir.glob(f"*_results{suffix}.csv"))
+    else:
+        csv_files = list(results_dir.glob("*_results.csv"))
+    
     if not csv_files:
         print("No CSV files found for table generation!")
         return
@@ -231,12 +245,12 @@ def generate_benchmark_tables(results_dir="benchmark_results"):
     
     # Generate individual algorithm tables
     for csv_file in csv_files:
-        table_file = generate_algorithm_table(csv_file, output_dir)
+        table_file = generate_algorithm_table(csv_file, output_dir, suffix)
         algorithm = csv_file.stem.replace("_results", "").replace("_", " ").title()
         print(f"✓ {table_file.name} - Detailed table for {algorithm}")
     
     # Generate summary table
-    summary_file = generate_summary_table(csv_files, output_dir)
+    summary_file = generate_summary_table(csv_files, output_dir, suffix)
     print(f"✓ {summary_file.name} - Summary comparison table")
     
     print(f"\nTables saved in: {output_dir}")

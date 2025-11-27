@@ -44,15 +44,15 @@ namespace std {
 int DynamicType::toInt() const {
   try {
     if (type == Type::INT) {
-      return std::any_cast<int>(value);
+      return std::get<int>(value);
     } else if (type == Type::DOUBLE) {
-      return static_cast<int>(std::any_cast<double>(value));
+      return static_cast<int>(std::get<double>(value));
     } else if (type == Type::BOOL) {
-      return std::any_cast<bool>(value) ? 1 : 0;
+      return std::get<bool>(value) ? 1 : 0;
     } else if (type == Type::STRING) {
-      return std::stoi(std::any_cast<std::string>(value));
+      return std::stoi(std::get<std::string>(value));
     }
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value has unexpected type");
   } catch (const std::invalid_argument&) {
     throw std::runtime_error("Cannot convert string to int (invalid argument)");
@@ -66,21 +66,21 @@ int DynamicType::toInt() const {
 double DynamicType::toDouble() const {
   try {
     if (type == Type::DOUBLE) {
-      return std::any_cast<double>(value);
+      return std::get<double>(value);
     } else if (type == Type::INT) {
-      return static_cast<double>(std::any_cast<int>(value));
+      return static_cast<double>(std::get<int>(value));
     } else if (type == Type::BOOL) {
-      return std::any_cast<bool>(value) ? 1.0 : 0.0;
+      return std::get<bool>(value) ? 1.0 : 0.0;
     } else if (type == Type::STRING) {
       try {
-        return std::stod(std::any_cast<const std::string&>(value));
+        return std::stod(std::get<std::string>(value));
       } catch (const std::invalid_argument&) {
         throw std::runtime_error("Cannot convert string to double (invalid argument)");
       } catch (const std::out_of_range&) {
         throw std::runtime_error("Cannot convert string to double (out of range)");
       }
     }
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Internal error: stored value type differs from enum Type (toDouble)");
   }
   throw std::runtime_error("Cannot convert to double");
@@ -89,17 +89,17 @@ double DynamicType::toDouble() const {
 std::string DynamicType::toString() const {
   try {
     if (type == Type::STRING) {
-      return std::any_cast<const std::string&>(value);
+      return std::get<std::string>(value);
     } else if (type == Type::INT) {
-      return std::to_string(std::any_cast<int>(value));
+      return std::to_string(std::get<int>(value));
     } else if (type == Type::DOUBLE) {
-      return std::to_string(std::any_cast<double>(value));
+      return std::to_string(std::get<double>(value));
     } else if (type == Type::BOOL) {
-      return std::any_cast<bool>(value) ? "True" : "False";
+      return std::get<bool>(value) ? "True" : "False";
     } else if (type == Type::NONE) {
       return "None";
     } else if (type == Type::LIST) {
-      const std::vector<DynamicType> &list = std::any_cast<const std::vector<DynamicType>&>(value);
+      const std::vector<DynamicType> &list = std::get<std::vector<DynamicType>>(value);
       std::string result = "[";
       for (size_t i = 0; i < list.size(); ++i) {
         if (i > 0) result += ", ";
@@ -108,7 +108,7 @@ std::string DynamicType::toString() const {
       result += "]";
       return result;
     } else if (type == Type::DICT) {
-      const std::map<std::string, DynamicType> &dict = std::any_cast<const std::map<std::string, DynamicType>&>(value);
+      const std::map<std::string, DynamicType> &dict = std::get<std::map<std::string, DynamicType>>(value);
       std::string result = "{";
       bool first = true;
       for (const std::pair<const std::string, DynamicType> &kv : dict) {
@@ -119,7 +119,7 @@ std::string DynamicType::toString() const {
       result += "}";
       return result;
     } else if(type == Type::SET) {
-      const std::unordered_set<DynamicType> &set = std::any_cast<const std::unordered_set<DynamicType>&>(value);
+      const std::unordered_set<DynamicType> &set = std::get<std::unordered_set<DynamicType>>(value);
       std::string result = "{";
       bool first = true;
       for (const DynamicType &item : set) {
@@ -131,7 +131,7 @@ std::string DynamicType::toString() const {
       return result;
     }
 
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Internal error: stored value type differs from enum Type (toString)");
   }
   return "Unknown";
@@ -140,23 +140,23 @@ std::string DynamicType::toString() const {
 bool DynamicType::toBool() const {
   try {
     if (type == Type::BOOL) {
-      return std::any_cast<bool>(value);
+      return std::get<bool>(value);
     } else if (type == Type::NONE) {
       return false;
     } else if (type == Type::INT) {
-      return std::any_cast<int>(value) != 0;
+      return std::get<int>(value) != 0;
     } else if (type == Type::DOUBLE) {
-      return std::any_cast<double>(value) != 0.0;
+      return std::get<double>(value) != 0.0;
     } else if (type == Type::STRING) {
-      return !std::any_cast<const std::string&>(value).empty();
+      return !std::get<std::string>(value).empty();
     } else if (type == Type::LIST) {
-      return !std::any_cast<const std::vector<DynamicType>&>(value).empty();
+      return !std::get<std::vector<DynamicType>>(value).empty();
     } else if (type == Type::DICT) {
-      return !std::any_cast<const std::map<std::string, DynamicType>&>(value).empty();
+      return !std::get<std::map<std::string, DynamicType>>(value).empty();
     } else if (type == Type::SET) {
-      return !std::any_cast<const std::unordered_set<DynamicType>&>(value).empty();
+      return !std::get<std::unordered_set<DynamicType>>(value).empty();
     }
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Internal error: stored value type differs from enum Type (toBool)");
   }
   return false;
@@ -165,8 +165,8 @@ bool DynamicType::toBool() const {
 DynamicType DynamicType::operator+(const DynamicType &other) const {
   // Concats
   if (type == Type::LIST && other.type == Type::LIST) {
-    std::vector<DynamicType> left = std::any_cast<std::vector<DynamicType>>(value);
-    std::vector<DynamicType> right = std::any_cast<std::vector<DynamicType>>(other.value);
+    std::vector<DynamicType> left = std::get<std::vector<DynamicType>>(value);
+    std::vector<DynamicType> right = std::get<std::vector<DynamicType>>(other.value);
     
     std::vector<DynamicType> result = left;
     result.insert(result.end(), right.begin(), right.end());
@@ -205,7 +205,7 @@ DynamicType DynamicType::operator*(const DynamicType &other) const {
     int count = other.toInt();
     for (int i = 0; i < count; ++i)
     {
-      result += std::any_cast<std::string>(value);
+      result += std::get<std::string>(value);
     }
     return DynamicType(result);
   }
@@ -261,18 +261,18 @@ bool DynamicType::operator==(const DynamicType &other) const {
       case Type::BOOL:
         return toBool() == other.toBool();
       case Type::LIST: {
-        const auto &list1 = std::any_cast<const std::vector<DynamicType>&>(value);
-        const auto &list2 = std::any_cast<const std::vector<DynamicType>&>(other.value);
+        const std::vector<DynamicType> &list1 = std::get<std::vector<DynamicType>>(value);
+        const std::vector<DynamicType> &list2 = std::get<std::vector<DynamicType>>(other.value);
         return list1 == list2;
       }
       case Type::DICT: {
-        const auto &dict1 = std::any_cast<const std::map<std::string, DynamicType>&>(value);
-        const auto &dict2 = std::any_cast<const std::map<std::string, DynamicType>&>(other.value);
+        const std::map<std::string, DynamicType> &dict1 = std::get<std::map<std::string, DynamicType>>(value);
+        const std::map<std::string, DynamicType> &dict2 = std::get<std::map<std::string, DynamicType>>(other.value);
         return dict1 == dict2;
       }
       case Type::SET: {
-        const auto &set1 = std::any_cast<const std::set<DynamicType>&>(value);
-        const auto &set2 = std::any_cast<const std::set<DynamicType>&>(other.value);
+        const std::unordered_set<DynamicType> &set1 = std::get<std::unordered_set<DynamicType>>(value);
+        const std::unordered_set<DynamicType> &set2 = std::get<std::unordered_set<DynamicType>>(other.value);
         return set1 == set2;
       }
       default:
@@ -354,9 +354,9 @@ DynamicType &DynamicType::operator[](const size_t index) {
     throw std::runtime_error("Type is not a list");
   }
   try{
-    std::vector<DynamicType> &list = std::any_cast<std::vector<DynamicType> &>(value);
+    std::vector<DynamicType> &list = std::get<std::vector<DynamicType>>(value);
     return list.at(index);
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (operator[])");
   }
 }
@@ -366,9 +366,9 @@ DynamicType &DynamicType::operator[](const std::string &key) {
     throw std::runtime_error("Type is not a dict");
   }
   try {
-    std::map<std::string, DynamicType> &dict = std::any_cast<std::map<std::string, DynamicType> &>(value);
+    std::map<std::string, DynamicType> &dict = std::get<std::map<std::string, DynamicType>>(value);
     return dict[key];
-  } catch (const std::bad_any_cast&) {
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (operator[])");
   }
 }
@@ -390,8 +390,8 @@ std::vector<DynamicType>& DynamicType::getList() {
     throw std::runtime_error("Type is not a list");
   }
   try{
-    return std::any_cast<std::vector<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::vector<DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (getList)");
   }
 }
@@ -401,8 +401,8 @@ const std::vector<DynamicType>& DynamicType::getList() const {
     throw std::runtime_error("Type is not a list");
   }
   try{
-    return std::any_cast<const std::vector<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::vector<DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (getList const)");
   }
 }
@@ -412,8 +412,8 @@ std::map<std::string, DynamicType>& DynamicType::getDict() {
     throw std::runtime_error("Type is not a dict");
   }
   try{
-    return std::any_cast<std::map<std::string, DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::map<std::string, DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (getDict)");
   }
 }
@@ -423,8 +423,8 @@ const std::map<std::string, DynamicType>& DynamicType::getDict() const {
     throw std::runtime_error("Type is not a dict");
   }
   try{
-    return std::any_cast<const std::map<std::string, DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::map<std::string, DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not an enum Type (getDict const)");
   }
 }
@@ -434,8 +434,8 @@ std::unordered_set<DynamicType>& DynamicType::getSet() {
     throw std::runtime_error("Type is not a set");
   }
   try{
-    return std::any_cast<std::unordered_set<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::unordered_set<DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not a set (getSet)");
   }
 }
@@ -445,8 +445,8 @@ const std::unordered_set<DynamicType>& DynamicType::getSet() const {
     throw std::runtime_error("Type is not a set");
   }
   try{
-    return std::any_cast<const std::unordered_set<DynamicType>&>(value);
-  } catch (const std::bad_any_cast&) {
+    return std::get<std::unordered_set<DynamicType>>(value);
+  } catch (const std::bad_variant_access&) {
     throw std::runtime_error("Stored value is not a set (getSet const)");
   }
 }
@@ -456,7 +456,7 @@ DynamicType DynamicType::sublist(size_t start, size_t end) {
     throw std::runtime_error("Type is not a list");
   }
   
-  auto& list = getList();
+  std::vector<DynamicType>& list = getList();
   if(start > list.size() || end > list.size() || start > end) {
     throw std::runtime_error("Sublist indices out of range");
   }
@@ -478,7 +478,7 @@ DynamicType DynamicType::sublist(size_t start, size_t end, size_t step) {
     throw std::runtime_error("Step cannot be zero");
   }
   
-  auto& list = getList();
+  std::vector<DynamicType>& list = getList();
   if(start > list.size() || end > list.size()) {
     throw std::runtime_error("Sublist indices out of range");
   }
@@ -496,7 +496,7 @@ void DynamicType::add(const DynamicType &item) {
     throw std::runtime_error("add() can only be called on sets");
   }
   
-  auto& set = getSet();
+  std::unordered_set<DynamicType>& set = getSet();
   set.insert(item);
 }
 
@@ -505,7 +505,7 @@ void DynamicType::append(const DynamicType &item) {
     throw std::runtime_error("append() can only be called on lists");
   }
   
-  auto& list = getList();
+  std::vector<DynamicType>& list = getList();
   list.push_back(item);
 }
 
@@ -514,7 +514,7 @@ void DynamicType::remove(size_t index) {
     throw std::runtime_error("remove() by index can only be called on lists");
   }
   
-  auto& list = getList();
+  std::vector<DynamicType>& list = getList();
   if(index >= list.size()) {
     throw std::runtime_error("List index out of range");
   }
@@ -527,7 +527,7 @@ void DynamicType::remove(const std::string &key) {
     throw std::runtime_error("remove() by key can only be called on dictionaries");
   }
   
-  auto& dict = getDict();
+  std::map<std::string, DynamicType>& dict = getDict();
   dict.erase(key);
 }
 
@@ -536,7 +536,7 @@ void DynamicType::remove(const DynamicType &item) {
     throw std::runtime_error("remove() by item can only be called on sets");
   }
   
-  auto& set = getSet();
+  std::unordered_set<DynamicType>& set = getSet();
   set.erase(item);
 }
 
@@ -546,15 +546,15 @@ bool DynamicType::contains(const DynamicType& key) const {
     if(!key.isString()) {
       return false; // Dict keys must be strings
     }
-    const auto& dict = getDict();
+    const std::map<std::string, DynamicType>& dict = getDict();
     return dict.find(key.toString()) != dict.end();
   }
   else if(type == Type::SET) {
-    const auto& set = getSet();
+    const std::unordered_set<DynamicType>& set = getSet();
     return set.find(key) != set.end();
   }
   else if(type == Type::LIST) {
-    const auto& list = getList();
+    const std::vector<DynamicType>& list = getList();
     return std::find(list.begin(), list.end(), key) != list.end();
   }
   else {
@@ -567,7 +567,7 @@ void DynamicType::set(const std::string &key, const DynamicType &value) {
     throw std::runtime_error("set() can only be called on dictionaries");
   }
   
-  auto& dict = getDict();
+  std::map<std::string, DynamicType>& dict = getDict();
   dict[key] = value;
 }
 
@@ -576,8 +576,8 @@ DynamicType DynamicType::get(const std::string &key) const {
     throw std::runtime_error("get() can only be called on dictionaries");
   }
   
-  const auto& dict = getDict();
-  auto it = dict.find(key);
+  const std::map<std::string, DynamicType>& dict = getDict();
+  std::map<std::string, DynamicType>::const_iterator it = dict.find(key);
   if(it != dict.end()) {
     return it->second;
   }

@@ -2,7 +2,7 @@
 #ifndef DYNAMIC_TYPE_HPP
 #define DYNAMIC_TYPE_HPP
 
-#include <any>
+#include <variant>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -58,12 +58,22 @@ class DynamicType{
     };
 
   private:
-    std::any value;
+    std::variant<
+      std::monostate,
+      int,
+      double,
+      std::string,
+      bool,
+      std::vector<DynamicType>,
+      std::map<std::string, DynamicType>,
+      std::unordered_set<DynamicType>
+    > value;
+
     Type type;
 
   public:
     // Constructors
-    DynamicType() : type(Type::NONE) {}
+    DynamicType() : value(std::monostate{}), type(Type::NONE) {}
 
     DynamicType(int val) : value(val), type(Type::INT) {}
 
@@ -81,7 +91,10 @@ class DynamicType{
 
     DynamicType(const std::unordered_set<DynamicType> &val) : value(val), type(Type::SET) {}
     
-    DynamicType(const std::set<DynamicType> &val) : value(val), type(Type::SET) {}
+    // Accept std::set but convert internally to unordered_set
+    DynamicType(const std::set<DynamicType> &val) : value(std::unordered_set<DynamicType>(val.begin(), val.end())), type(Type::SET) {}
+
+    ~DynamicType() = default;
 
     // Type checking
     /**

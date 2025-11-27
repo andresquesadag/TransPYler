@@ -1,7 +1,7 @@
 """
 DataStructureGenerator
 ----------------------
-This module provides the DataStructureGenerator class, which is responsible for generating code for data structures such as lists, tuples, sets, and dictionaries in both Python and C++.
+This module provides the DataStructureGenerator class, which is responsible for generating C++ code for data structures such as lists, tuples, sets, and dictionaries.
 
 Key Features:
 - Type deduction for C++ STL containers (e.g., std::vector, std::tuple, std::set, std::map).
@@ -9,23 +9,20 @@ Key Features:
 - Used by the main CodeGenerator to handle all collection-related code generation.
 
 Usage:
-- Instantiate with a target language ('python' or 'cpp').
 - Call visit(node) with an AST node representing a collection.
-- Returns a string of generated code for the target language.
+- Returns a string of generated C++ code.
 """
 
 """
-DataStructureGenerator: Generates code for data structures (lists, tuples, sets, dicts) in Python and C++.
+DataStructureGenerator: Generates C++ code for data structures (lists, tuples, sets, dicts).
 
-Provides helpers for type deduction and code generation for collections.
-Supports both Python and C++ targets, automatically deducing types for C++ STL containers.
+Provides helpers for code generation for collections using DynamicType.
 """
 
 
 class DataStructureGenerator:
     """
-    Generates code for data structure JSON nodes (lists, tuples, sets, dicts).
-    Handles both Python and C++ targets, including type deduction for C++ STL containers.
+    Generates C++ code for data structure nodes (lists, tuples, sets, dicts).
     """
 
     def __init__(self, expr_generator=None):
@@ -34,7 +31,6 @@ class DataStructureGenerator:
         Args:
                         expr_generator: Optional ExprGenerator for evaluating element expressions
         """
-        self.target = "cpp"
         self.expr_generator = expr_generator
 
     def _create_dynamic_vector(self, elements: list) -> str:
@@ -48,7 +44,7 @@ class DataStructureGenerator:
 
     def visit(self, node) -> str:
         """
-        Dispatch code generation to the appropriate method based on node type and target.
+        Dispatch code generation to the appropriate method based on node type.
         Args:
                 node: AST node object
         Returns:

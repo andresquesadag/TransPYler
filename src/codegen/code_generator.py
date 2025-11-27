@@ -32,10 +32,9 @@ using namespace std;
 
 
 class CodeGenerator:
-    """Main code generation orchestrator for C++ target."""
+    """Main code generation orchestrator."""
 
     def __init__(self):
-        self.target = "cpp"
         self.scope = ScopeManager()
 
         self.expr_generator = ExprGenerator(scope=self.scope)
@@ -72,22 +71,20 @@ class CodeGenerator:
         if node_type == "FunctionDef":
             return self.function_generator.visit(node)
 
-        # For C++ mode, handle basic statements separately from control flow
-        if self.target == "cpp":
-            if node_type in ["Assign", "ExprStmt", "Return"]:
-                return self.basic_stmt_generator.visit(node)
+        # Handle basic statements separately from control flow
+        if node_type in ["Assign", "ExprStmt", "Return"]:
+            return self.basic_stmt_generator.visit(node)
 
         # Handle control flow and other statements
         return self.statement_visitor.visit(node)
 
     def generate(self, module: Module) -> str:
         """
-        Generate complete code for a module, handling both Python and C++ targets.
-        For C++, uses the integrated approach from CodeGeneratorCpp.
+        Generate complete C++ code for a module.
         Args:
                 module: Module AST node
         Returns:
-                str: Generated code
+                str: Generated C++ code
         """
         if not isinstance(module, Module):
             raise TypeError("CodeGenerator.generate expects a Module node")
@@ -95,7 +92,7 @@ class CodeGenerator:
         return self._generate_cpp(module)
 
     def _generate_cpp(self, module: Module) -> str:
-        """Generate C++ code using the integrated approach."""
+        """Generate C++ code for the module."""
         self.scope.reset()
 
         # Separate functions from global statements
@@ -175,11 +172,10 @@ class CodeGenerator:
             # Use the new generate method for modules
             code = self.generate(node)
         else:
-            # Fall back to the old visit method for individual nodes
+            # Fall back to the visit method for individual nodes
             code = self.visit(node)
-            if self.target == "cpp":
-                # Include DynamicType system and builtins for non-module nodes
-                code = CPP_PREAMBLE + "\n" + code
+            # Include DynamicType system and builtins for non-module nodes
+            code = CPP_PREAMBLE + "\n" + code
 
         # Write generated code to file
         with open(file=filename, mode="w", encoding="utf-8") as f:

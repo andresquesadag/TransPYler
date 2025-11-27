@@ -20,7 +20,6 @@ Architecture:
 
 Restrictions:
 - Assignment targets support simple identifiers and subscripts (arr[i] = value)
-- Supports C++ target only (future: Python support)
 - Variables are declared as DynamicType on first assignment
 
 Usage:

@@ -1,8 +1,7 @@
 # scope_manager.py
 """
 ScopeManager: Manages variable scopes and symbol tables during code generation.
-Ensures correct variable resolution and scope nesting for both Python and C++ targets.
-Persona 3 responsibility: Implements scope tracking and symbol management helpers.
+Ensures correct variable resolution and scope nesting.
 """
 
 # Import statements

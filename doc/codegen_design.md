@@ -6,7 +6,7 @@ The code generation system is built on a modular architecture with specialized g
 
 The `DynamicType` class is the core of Python-to-C++ type emulation:
 
-- **Runtime Type Storage**: Uses `std::any` to hold values of different types
+- **Runtime Type Storage**: Uses `std::variant` to hold values of different types
 - **Type Enumeration**: Tracks current type (INT, DOUBLE, STRING, BOOL, NONE, LIST, DICT, SET)
 - **Automatic Conversions**: Methods like `toInt()`, `toDouble()`, `toString()`, `toBool()`
 - **Operator Overloading**: All Python operators (+, -, \*, /, %, //, \*\*, ==, !=, <, >, etc.)

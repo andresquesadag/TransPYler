@@ -672,7 +672,6 @@ The benchmarking suite compares three implementations:
 2. **C++ Transpiled**: TransPYler-generated C++ code
 3. **C++ Manual**: Hand-written optimized C++ code
 
-
 ### 11.2 Test Algorithms
 
 - **Fibonacci Recursive**: Tests function call overhead and recursion (n=1 to 45)
@@ -683,13 +682,14 @@ The benchmarking suite compares three implementations:
 
 Comprehensive benchmarking results comparing the three implementations:
 
-| Algorithm | Test Range | Speedup (Transpiled) | Speedup (Manual) | Key Finding |
-|-----------|-----------|---------------------|------------------|-----------|
-| **Fibonacci Iterative** | n=1 to 120 | **1.77x** (avg)<br>1.32x - 2.44x | **1.74x** (avg)<br>0.08x - 2.47x | Transpiled matches manual performance |
-| **Fibonacci Recursive** | n=1 to 45 | **1.96x** (avg)<br>0.85x - 2.77x | **19.33x** (avg)<br>2.16x - 188.47x | Collapses at deep recursion (n>35) |
-| **Selection Sort** | n=1 to 50 | **1.63x** (avg)<br>1.39x - 2.38x | **1.83x** (avg)<br>1.32x - 2.23x | Consistent ~12% overhead |
+| Algorithm               | Test Range | Speedup (Transpiled)             | Speedup (Manual)                    | Key Finding                           |
+| ----------------------- | ---------- | -------------------------------- | ----------------------------------- | ------------------------------------- |
+| **Fibonacci Iterative** | n=1 to 120 | **1.77x** (avg)<br>1.32x - 2.44x | **1.74x** (avg)<br>0.08x - 2.47x    | Transpiled matches manual performance |
+| **Fibonacci Recursive** | n=1 to 45  | **1.96x** (avg)<br>0.85x - 2.77x | **19.33x** (avg)<br>2.16x - 188.47x | Collapses at deep recursion (n>35)    |
+| **Selection Sort**      | n=1 to 50  | **1.63x** (avg)<br>1.39x - 2.38x | **1.83x** (avg)<br>1.32x - 2.23x    | Consistent ~12% overhead              |
 
 **Key Observations:**
+
 - **Iterative algorithms**: Transpiled code performs nearly identical to hand-written C++
 - **Recursive algorithms**: DynamicType overhead multiplies with recursion depth
 - **Loops and arrays**: Stable and predictable performance across all input sizes
@@ -703,16 +703,17 @@ This section provides an in-depth analysis of benchmark results, examining perfo
 
 **Overall Performance Metrics:**
 
-| Metric | Fibonacci Iterative | Fibonacci Recursive | Selection Sort |
-|--------|-------------------|---------------------|----------------|
-| **Total tests** | 120 | 45 | 50 |
-| **Avg Python time** | 106.90 ± 12.14 ms | 11920.78 ± 45579.88 ms | 98.33 ± 7.85 ms |
-| **Avg Transpiled time** | 60.54 ± 4.86 ms | 8335.19 ± 25174.80 ms | 60.64 ± 6.53 ms |
-| **Avg Manual time** | 87.18 ± 155.31 ms | 153.89 ± 289.61 ms | 53.92 ± 2.68 ms |
+| Metric                       | Fibonacci Iterative                                 | Fibonacci Recursive                                    | Selection Sort                                    |
+| ---------------------------- | --------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------- |
+| **Total tests**              | 120                                                 | 45                                                     | 50                                                |
+| **Avg Python time**          | 106.90 ± 12.14 ms                                   | 11920.78 ± 45579.88 ms                                 | 98.33 ± 7.85 ms                                   |
+| **Avg Transpiled time**      | 60.54 ± 4.86 ms                                     | 8335.19 ± 25174.80 ms                                  | 60.64 ± 6.53 ms                                   |
+| **Avg Manual time**          | 87.18 ± 155.31 ms                                   | 153.89 ± 289.61 ms                                     | 53.92 ± 2.68 ms                                   |
 | **Coefficient of Variation** | Python: 11.4%<br>Transpiled: 8.0%<br>Manual: 178.1% | Python: 382.4%<br>Transpiled: 302.0%<br>Manual: 188.2% | Python: 8.0%<br>Transpiled: 10.8%<br>Manual: 5.0% |
-| **Transpiled vs Manual** | **0.69x** (31% faster!) | **54.16x** slower | **1.12x** slower |
+| **Transpiled vs Manual**     | **0.69x** (31% faster!)                             | **54.16x** slower                                      | **1.12x** slower                                  |
 
 **Key Statistical Insights:**
+
 - **Exponential Growth**: Fibonacci Recursive shows extreme variation due to exponential time complexity
 
 ---
@@ -720,6 +721,7 @@ This section provides an in-depth analysis of benchmark results, examining perfo
 #### 11.4.2 Fibonacci Iterative
 
 **Algorithm Overview:**
+
 - **Complexity**: O(n) - Linear time
 - **Test Range**: n = 1 to 120
 
@@ -737,6 +739,7 @@ Average Execution Times (excluding n=1-4 anomaly):
 ```
 
 **Speedup Analysis:**
+
 - **Median Speedup (Transpiled)**: 1.76x
 - **Range**: 1.32x to 2.44x
 - **Quartile Performance**:
@@ -749,25 +752,26 @@ Average Execution Times (excluding n=1-4 anomaly):
 
 At very small n values, manual C++ shows dramatic startup overhead:
 
-| n | Python (ms) | Transpiled (ms) | Manual (ms) | Manual/Trans Ratio |
-|---|-------------|-----------------|-------------|--------------------|
-| 1 | 98.17 | 54.71 | **1034.46** | **18.9x slower** |
-| 2 | 81.78 | 53.20 | **1033.15** | **19.4x slower** |
-| 3 | 84.57 | 55.24 | **1038.12** | **18.8x slower** |
-| 4 | 106.00 | 54.41 | **381.76** | **7.0x slower** |
-| 5 | 93.06 | 55.23 | 52.07 | 0.94x (normal) |
+| n   | Python (ms) | Transpiled (ms) | Manual (ms) | Manual/Trans Ratio |
+| --- | ----------- | --------------- | ----------- | ------------------ |
+| 1   | 98.17       | 54.71           | **1034.46** | **18.9x slower**   |
+| 2   | 81.78       | 53.20           | **1033.15** | **19.4x slower**   |
+| 3   | 84.57       | 55.24           | **1038.12** | **18.8x slower**   |
+| 4   | 106.00      | 54.41           | **381.76**  | **7.0x slower**    |
+| 5   | 93.06       | 55.23           | 52.07       | 0.94x (normal)     |
 
 **Explanation:** The operating system must load. From n=5 onwards, manual C++ normalizes and performs identically to transpiled.
 
 **Practical Impact:** This anomaly only affects trivial computations. From n=5 onwards, transpiled code consistently matches or exceeds manual C++ performance.
 
- **Transpiled code achieves performance SUPERIOR to hand-written C++** (0.69x ratio = 31% faster on average!) for iterative algorithms.
+**Transpiled code achieves performance SUPERIOR to hand-written C++** (0.69x ratio = 31% faster on average!) for iterative algorithms.
 
 ---
 
 #### 11.4.3 Fibonacci Recursive
 
 **Algorithm Overview:**
+
 - **Complexity**: O(2^n) - Exponential time
 - **Test Range**: n = 1 to 45
 
@@ -780,6 +784,7 @@ At very small n values, manual C++ shows dramatic startup overhead:
 The recursive implementation exhibits different performance characteristics across three distinct phases:
 
 **Phase 1: Low Recursion (n = 1-15)**
+
 ```
 Average Metrics:
 ├─ Speedup Transpiled: 2.34x (median: 2.35x) --> GOOD
@@ -790,6 +795,7 @@ Observation: Transpiled code performs very well, nearly matching manual C++
 ```
 
 **Phase 2: Medium Recursion (n = 16-30)**
+
 ```
 Average Metrics:
 ├─ Speedup Transpiled: 2.35x (median: 2.36x) --> GOOD: Maintaining performance
@@ -800,6 +806,7 @@ Observation: Manual C++ begins to show advantages, but transpiled still strong
 ```
 
 **Phase 3: Deep Recursion (n = 31-45)**
+
 ```
 Average Metrics:
 ├────────────────────────── SPEDDUP────────────────────────────────────────────
@@ -817,11 +824,11 @@ Observation: SEVERE PERFORMANCE COLLAPSE of transpiled code
 
 At extreme recursion depths, the transpiled code **loses most of its advantage**:
 
-| n | Python (s) | Transpiled (s) | Manual (s) | Trans Speedup | Manual Speedup |
-|---|-----------|---------------|-----------|---------------|----------------|
-| 36 | 2.84 | 2.73 | 0.098 | **1.04x** | **28.96x** |
-| 40 | 14.64 | 17.19 | 0.297 | **0.85x** (slower!) | **49.27x** |
-| 45 | 290.90 | 137.50 | 1.543 | **2.12x** | **188.47x** |
+| n   | Python (s) | Transpiled (s) | Manual (s) | Trans Speedup       | Manual Speedup |
+| --- | ---------- | -------------- | ---------- | ------------------- | -------------- |
+| 36  | 2.84       | 2.73           | 0.098      | **1.04x**           | **28.96x**     |
+| 40  | 14.64      | 17.19          | 0.297      | **0.85x** (slower!) | **49.27x**     |
+| 45  | 290.90     | 137.50         | 1.543      | **2.12x**           | **188.47x**    |
 
 **Explanation:** Deep recursion is the Achilles' heel of the transpiled approach. DynamicType overhead multiplies with each recursive call. In light recursion (n≤30), this overhead is acceptable. Beyond n=35, exponential call growth causes severe performance collapse.
 
@@ -834,6 +841,7 @@ At extreme recursion depths, the transpiled code **loses most of its advantage**
 #### 11.4.4 Selection Sort
 
 **Algorithm Overview:**
+
 - **Complexity**: O(n²) - Quadratic time for all cases
 - **Test Range**: n = 1 to 50 (array sizes 10 to 500 elements)
 
@@ -854,14 +862,15 @@ Average Execution Times:
 
 Performance remains remarkably stable across all input sizes:
 
-| Range | Speedup (Transpiled) | Speedup (Manual) | Variance |
-|-------|---------------------|------------------|----------|
-| n=1-12 | 1.69x | 1.76x | ±3% |
-| n=13-25 | 1.60x | 1.82x | ±4% |
-| n=26-37 | 1.64x | 1.87x | ±3% |
-| n=38-50 | 1.61x | 1.87x | ±4% |
+| Range   | Speedup (Transpiled) | Speedup (Manual) | Variance |
+| ------- | -------------------- | ---------------- | -------- |
+| n=1-12  | 1.69x                | 1.76x            | ±3%      |
+| n=13-25 | 1.60x                | 1.82x            | ±4%      |
+| n=26-37 | 1.64x                | 1.87x            | ±3%      |
+| n=38-50 | 1.61x                | 1.87x            | ±4%      |
 
 **Key Observations:**
+
 - **Minimal variance**: Speedup changes by less than 7% across the entire range
 - **No collapse**: Unlike recursive Fibonacci, performance remains stable
 - **Predictable**: Coefficient of variation < 11% for all implementations
@@ -875,40 +884,42 @@ Performance remains remarkably stable across all input sizes:
 
 ### 11.5 Performance Conclusions
 
-| Goal | Status | Evidence |
-|------|--------|----------|
-| Generate valid C++ from Python | Achieved | All tests produce correct output |
-| Execute faster than Python | Achieved | 1.5-1.7x average speedup |
-| Maintain Python semantics | Achieved | DynamicType preserves type behavior |
-| Handle diverse algorithms | Partial | Excellent for iterative, struggles with deep recursion |
-
-
+| Goal                           | Status   | Evidence                                               |
+| ------------------------------ | -------- | ------------------------------------------------------ |
+| Generate valid C++ from Python | Achieved | All tests produce correct output                       |
+| Execute faster than Python     | Achieved | 1.5-1.7x average speedup                               |
+| Maintain Python semantics      | Achieved | DynamicType preserves type behavior                    |
+| Handle diverse algorithms      | Partial  | Excellent for iterative, struggles with deep recursion |
 
 #### **Python Original (Fangless). Performance summary**
 
 **Behavior:**
+
 - Consistent baseline performance across all algorithms
 - Execution times: 98-107ms for iterative/sort, 11,920ms average for recursive
 - Predictable but slowest of all three implementations
 
 **Algorithms tested:**
+
 - Fibonacci Iterative (n=1-120): 106.90ms average
 - Fibonacci Recursive (n=1-45): 11,920.78ms average (exponential growth)
 - Selection Sort (n=1-50): 98.33ms average
 
-**Overall ranking:**  **Slowest** (baseline reference: 1.0x)
+**Overall ranking:** **Slowest** (baseline reference: 1.0x)
 
 ---
 
 #### **C++ Transpiled (TransPYler). Performance summary**
 
 **Behavior:**
+
 - **Excellent for iterative algorithms:** 1.77x faster than Python, matching manual C++ performance
 - **Excellent for light recursion (n≤30):** 2.35x faster than Python (best speedup achieved)
 - **Poor for deep recursion (n>35):** Collapses to 1.2x speedup, 54x slower than manual C++
 - Consistent overhead of ~8-11% vs manual C++ in non-recursive scenarios
 
 **Algorithms tested:**
+
 - Fibonacci Iterative (n=1-120): 60.54ms average **(31% faster than manual C++)**
 - Fibonacci Recursive (n=1-45): 8,335.19ms average (2x faster than Python, but 54x slower than manual)
 - Selection Sort (n=1-50): 60.64ms average (1.63x faster than Python)
@@ -920,16 +931,17 @@ Performance remains remarkably stable across all input sizes:
 #### **C++ Manual (Hand-written). Performance summary**
 
 **Behavior:**
+
 - **Best overall performance** in 2 out of 3 scenarios
 - **Exceptional for deep recursion:** 19-188x faster than Python, 54x faster than transpiled
 - **Slightly better for sorting:** 1.83x faster than Python (12% faster than transpiled)
 - **Startup anomaly in iterative:** Cold-start overhead (1034ms at n=1-4) drags down average
 
 **Algorithms tested:**
+
 - Fibonacci Iterative (n=1-120): 87.18ms average (anomaly included; 60ms normalized)
 - Fibonacci Recursive (n=1-45): 153.89ms average **(77x faster than transpiled)**
 - Selection Sort (n=1-50): 53.92ms average (fastest implementation)
-
 
 **Overall ranking:** **Fastest** (1.2x - 54x faster than transpiled, depending on algorithm)
 
@@ -937,18 +949,18 @@ Performance remains remarkably stable across all input sizes:
 
 ### **Summary Ranking**
 
-| Metric | Winner | Middle | Slowest |
-|--------|--------|--------|---------|
-| **Fibonacci Iterative** | Transpiled (60.5ms) | Manual (87.2ms)* | Python (106.9ms) |
-| **Fibonacci Recursive** | Manual (153.9ms) | Transpiled (8,335ms) | Python (11,921ms) |
-| **Selection Sort** | Manual (53.9ms) | Transpiled (60.6ms) | Python (98.3ms) |
-| **Overall Best** | **Manual C++** (2/3 wins) | **Transpiled** (1/3 wins) | **Python** (0/3 wins) |
+| Metric                  | Winner                    | Middle                    | Slowest               |
+| ----------------------- | ------------------------- | ------------------------- | --------------------- |
+| **Fibonacci Iterative** | Transpiled (60.5ms)       | Manual (87.2ms)\*         | Python (106.9ms)      |
+| **Fibonacci Recursive** | Manual (153.9ms)          | Transpiled (8,335ms)      | Python (11,921ms)     |
+| **Selection Sort**      | Manual (53.9ms)           | Transpiled (60.6ms)       | Python (98.3ms)       |
+| **Overall Best**        | **Manual C++** (2/3 wins) | **Transpiled** (1/3 wins) | **Python** (0/3 wins) |
 
 ---
 
 ### 11.6 Python Version Comparison: 3.12 vs 3.10
 
-The benchmarks were executed on both Python 3.12 and Python 3.10 to analyze version-specific performance differences. 
+The benchmarks were executed on both Python 3.12 and Python 3.10 to analyze version-specific performance differences.
 
 According to PEP 659 – Specializing Adaptive Interpreter, Python 3.11 introduces an adaptive interpreter that dynamically specializes bytecode instructions based on the types and values used. This technique, known as quickening, allows generic instructions to be replaced with optimized versions, achieving performance improvements of between 10% and 60% compared to Python 3.10. As a result, Python 3.11 offers more efficient execution without altering the semantics of the language, making it a significant advance in CPython optimization.
 
@@ -956,17 +968,17 @@ The following table shows the **average execution times** across all test cases 
 
 #### Performance Comparison Table
 
-| Algorithm | Implementation | Python 3.12 (ms) | Python 3.10 (ms) | Difference | % Change | Better |
-|-----------|---------------|------------------|------------------|------------|----------|--------|
-| **Fibonacci Iterative** | Python Original | 106.90 | 119.69 | +12.79 ms | **+12.0%** slower in 3.10 | **Python 3.12** |
-| | C++ Transpiled | 60.47 | 55.26 | -5.21 ms | **-8.6%** faster in 3.10 | **Python 3.10** |
-| | C++ Manual | 87.24 | 55.69 | -31.55 ms | **-36.2%** faster in 3.10 | **Python 3.10** |
-| **Fibonacci Recursive** | Python Original | 11,921.24 | 15,324.65 | +3,403.41 ms | **+28.5%** slower in 3.10 | **Python 3.12** |
-| | C++ Transpiled | 8,334.89 | 8,678.72 | +343.83 ms | **+4.1%** slower in 3.10 | **Python 3.12** |
-| | C++ Manual | 153.92 | 96.83 | -57.09 ms | **-37.1%** faster in 3.10 | **Python 3.10** |
-| **Selection Sort** | Python Original | 98.33 | 114.54 | +16.21 ms | **+16.5%** slower in 3.10 | **Python 3.12** |
-| | C++ Transpiled | 60.64 | 61.06 | +0.42 ms | **+0.7%** slower in 3.10 | **Python 3.12** |
-| | C++ Manual | 53.94 | 55.31 | +1.37 ms | **+2.5%** slower in 3.10 | **Python 3.12** |
+| Algorithm               | Implementation  | Python 3.12 (ms) | Python 3.10 (ms) | Difference   | % Change                  | Better          |
+| ----------------------- | --------------- | ---------------- | ---------------- | ------------ | ------------------------- | --------------- |
+| **Fibonacci Iterative** | Python Original | 106.90           | 119.69           | +12.79 ms    | **+12.0%** slower in 3.10 | **Python 3.12** |
+|                         | C++ Transpiled  | 60.47            | 55.26            | -5.21 ms     | **-8.6%** faster in 3.10  | **Python 3.10** |
+|                         | C++ Manual      | 87.24            | 55.69            | -31.55 ms    | **-36.2%** faster in 3.10 | **Python 3.10** |
+| **Fibonacci Recursive** | Python Original | 11,921.24        | 15,324.65        | +3,403.41 ms | **+28.5%** slower in 3.10 | **Python 3.12** |
+|                         | C++ Transpiled  | 8,334.89         | 8,678.72         | +343.83 ms   | **+4.1%** slower in 3.10  | **Python 3.12** |
+|                         | C++ Manual      | 153.92           | 96.83            | -57.09 ms    | **-37.1%** faster in 3.10 | **Python 3.10** |
+| **Selection Sort**      | Python Original | 98.33            | 114.54           | +16.21 ms    | **+16.5%** slower in 3.10 | **Python 3.12** |
+|                         | C++ Transpiled  | 60.64            | 61.06            | +0.42 ms     | **+0.7%** slower in 3.10  | **Python 3.12** |
+|                         | C++ Manual      | 53.94            | 55.31            | +1.37 ms     | **+2.5%** slower in 3.10  | **Python 3.12** |
 
 #### Key Observations
 
@@ -979,14 +991,13 @@ The following table shows the **average execution times** across all test cases 
 ![Fibonacci Iterative - Python 3.10](benchmark_results/charts/fibonacci_iterative_py310_individual_py310.png)
 
 **Observations:**
-- **Python Original (Fangless)**: Python 3.12 is **12% faster** (106.90ms vs 119.69ms) - **Better: Python 3.12** 
+
+- **Python Original (Fangless)**: Python 3.12 is **12% faster** (106.90ms vs 119.69ms) - **Better: Python 3.12**
   - Python 3.12 provide clear advantage for pure Python execution
   - Consistent performance improvement across all n values
-  
 - **C++ Transpiled**: Python 3.10 is **8.6% faster** (55.26ms vs 60.47ms) - **Better: Python 3.10**
   - The transpiled code runs slightly faster when executed from Python 3.10
   - Minimal but consistent improvement across all test cases
-  
 - **C++ Manual**: Python 3.10 is **36.2% faster** (55.69ms vs 87.24ms) - **Better: Python 3.10**
   - Both versions exhibit identical startup overhead anomaly (1034-1042ms for n=1-4)
   - From n=5 onwards, Python 3.10 is a little bit faster (~52ms vs ~60ms average)
@@ -1003,14 +1014,13 @@ The following table shows the **average execution times** across all test cases 
 ![Fibonacci Recursive - Python 3.10](benchmark_results/charts/fibonacci_recursive_py310_individual_py310.png)
 
 **Observations:**
+
 - **Python Original (Fangless)**: Python 3.12 is **28.5% faster** (11,921ms vs 15,325ms) - **Better: Python 3.12**
   - Most significant performance difference between versions
   - Python 3.12's recursive call optimizations provide substantial benefit
-  
 - **C++ Transpiled**: Python 3.12 is **4.1% faster** (8,335ms vs 8,679ms) - **Better: Python 3.12**
   - Minimal version impact on transpiled code performance
   - Performance collapse at n>35 occurs in both versions
-  
 - **C++ Manual**: Python 3.10 is **37.1% faster** (96.83ms vs 153.92ms) - **Better: Python 3.10**
   - Python 3.10 shows more consistent performance advantage across all recursion depths
 
@@ -1025,15 +1035,14 @@ The following table shows the **average execution times** across all test cases 
 ![Selection Sort - Python 3.10](benchmark_results/charts/selection_sort_py310_individual_py310.png)
 
 **Observations:**
+
 - **Python Original (Fangless)**: Python 3.12 is **16.5% faster** (98.33ms vs 114.54ms) - **Better: Python 3.12**
   - Consistent advantage for Python 3.12
   - Performance gap remains stable across all array sizes (n=1-50)
-  
 - **C++ Transpiled**: Python 3.12 is **0.7% faster** (60.64ms vs 61.06ms) - **Better: Python 3.12**
   - Negligible difference (less than 1ms average)
   - Version impact is minimal for transpiled code
   - Both versions show identical performance characteristics
-  
 - **C++ Manual**: Python 3.12 is **2.5% faster** (53.94ms vs 55.31ms) - **Better: Python 3.12**
   - Small but consistent advantage for Python 3.12
   - Performance remains stable and predictable in both versions
@@ -1042,15 +1051,14 @@ The following table shows the **average execution times** across all test cases 
 
 **4. Overall Version Comparison Summary**
 
-| Category | Key Insight |
-|----------|-------------|
-| **Python Original** | Python 3.12 is **12-28% faster** for pure Python code |
-| **C++ Transpiled** | Minimal version impact (~1-8% difference) |
-| **C++ Manual**  | Mixed results: Python 3.10 wins 2/3 cases by **6-7%**, Python 3.12 wins 1/3 by **3%** |
-| **Overall** | **Python 3.12 recommended for most use cases** |
+| Category            | Key Insight                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| **Python Original** | Python 3.12 is **12-28% faster** for pure Python code                                 |
+| **C++ Transpiled**  | Minimal version impact (~1-8% difference)                                             |
+| **C++ Manual**      | Mixed results: Python 3.10 wins 2/3 cases by **6-7%**, Python 3.12 wins 1/3 by **3%** |
+| **Overall**         | **Python 3.12 recommended for most use cases**                                        |
 
 ---
-
 
 ## 12. References
 
@@ -1060,8 +1068,7 @@ The following table shows the **average execution times** across all test cases 
 - [C++ Reference](https://en.cppreference.com/)
 - [Python Enhancement Proposals](https://peps.python.org/pep-0659/)
 
---- 
-
+---
 
 ## 13. Authors
 

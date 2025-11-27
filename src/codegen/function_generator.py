@@ -1,9 +1,9 @@
 """
 function_generator.py
 ---------------------
-FunctionGenerator: Generates code for function definitions and scope management (Persona 2).
+FunctionGenerator: Generates code for function definitions and scope management.
 
-This module provides the FunctionGenerator class, which generates code for function definitions, parameters, and return statements in both Python and C++.
+This module provides the FunctionGenerator class, which generates C++ code for function definitions, parameters, and return statements.
 Key Features:
 - Supports parameter handling, return statements, and extensibility for advanced function features.
 - Includes helpers for scope and parameter management.

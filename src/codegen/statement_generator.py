@@ -21,7 +21,7 @@ class StatementVisitor:
                 expr_generator: Optional ExprGenerator instance for expression evaluation
                 scope_manager: Optional ScopeManager for variable tracking
         """
-        self.target = "cpp"
+
         self.indent_level = 0
         self.indent_str = "    "
         self.expr_generator = expr_generator
